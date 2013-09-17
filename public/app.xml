@@ -10,6 +10,8 @@
       <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
       <!-- Your application code -->
       <p>Here is a thing I've published.</p>
+      <p>Here is another thing I've published.</p>
+      <p>Here is yet another thing I've published.</p>
     ]]>
   </Content>
 </Module>
