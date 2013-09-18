@@ -19,19 +19,22 @@ app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Set any view options.
+var appUrl = '//' + (process.env.URL || 'localhost') + ':' + app.get('port');
+
 // Development only.
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 
   app.get('/app.xml', function(request, response){
-    response.render('app_core');
+    response.render('app_core', { appUrl: appUrl });
   });
 }
 // Production only.
 else {
   app.get('/app.xml', function(request, response){
     response.header('Content-Type', 'application/xml');
-    response.render('app_core', {}, function(err, html){
+    response.render('app_core', { appUrl: appUrl }, function(err, html){
       response.render('app_xml_wrapper', { content: html });
     });
   });
