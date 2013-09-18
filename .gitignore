@@ -1,2 +1,5 @@
 # Ignore local OS files.
 .DS_Store
+
+# For now, ignore any generated css.
+/public/stylesheets/*.css
