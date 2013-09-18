@@ -20,11 +20,14 @@ app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set any view options.
-var appUrl = '//' + (process.env.URL || 'localhost') + ':' + app.get('port');
+// NOTE: I don't like this way of doing this.
+var appUrl = '//' + (process.env.URL || 'localhost');
 
 // Development only.
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
+
+  appUrl += ':' + app.get('port');
 
   app.get('/app.xml', function(request, response){
     response.render('app_core', { appUrl: appUrl });
