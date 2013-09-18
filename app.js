@@ -2,8 +2,6 @@
  * Module dependencies.
  */
 var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
   , http = require('http')
   , path = require('path');
 
@@ -21,13 +19,23 @@ app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
+// Development only.
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
-}
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+  app.get('/app.xml', function(request, response){
+    response.render('app_core');
+  });
+}
+// Production only.
+else {
+  app.get('/app.xml', function(request, response){
+    response.header('Content-Type', 'application/xml');
+    response.render('app_core', {}, function(err, html){
+      response.render('app_xml_wrapper', { content: html });
+    });
+  });
+}
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
