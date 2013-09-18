@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Module>
-  <ModulePrefs title="Your App Name">
+  <ModulePrefs title="HangDown">
     <Require feature="rpc"/>
     <Require feature="views"/>
   </ModulePrefs>
