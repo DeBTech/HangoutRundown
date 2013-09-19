@@ -6,7 +6,7 @@ function HangDownListCntr($scope) {
   $scope.items = [];
 
   $scope.activeItem = 0;
-  $scope.currentUser = 'Bret';
+  $scope.currentUser = null;
 
   $scope.regressTopic = function(){
     if ($scope.activeItem > 0)
@@ -20,6 +20,9 @@ function HangDownListCntr($scope) {
 
   $scope.newTopicBuffer = '';
   $scope.addNewTopic = function(){
+    // If the user has not been initialized yet, bail.
+    if ($scope.currentUser == null) return;
+
     // If there is no topic set, bail.
     if (!$scope.newTopicBuffer.length) return;
 
@@ -29,6 +32,11 @@ function HangDownListCntr($scope) {
 
     // TODO: Create a model to encapsulate the list and notifies Google of changes.
   };
+
+  // Add a callback to initialize gAPI elements.
+  gapi.hangout.onApiReady.add(function(eventObj){
+    $scope.currentUser = gapi.hangout.getLocalParticipant().person.displayName;
+  });
 }
 
 //HangDownListCntr.$inject = ['$scope'];
