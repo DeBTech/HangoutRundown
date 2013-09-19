@@ -5,7 +5,7 @@
 function HangDownListCntr($scope) {
   $scope.items = [];
 
-  $scope.activeItem = 1;
+  $scope.activeItem = 0;
   $scope.currentUser = 'Bret';
 
   $scope.regressTopic = function(){
