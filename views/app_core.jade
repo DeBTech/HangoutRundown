@@ -4,6 +4,6 @@ link(href=appUrl+"/stylesheets/style.css", rel="stylesheet", type="text/css")
 link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel="stylesheet", type="text/css")
 #HangDownContent(ng-app='', ng-controller="HangDownListCntr")
   ul.items
-    li(ng-repeat="item in items")
-      p {{item.label}}
-      p {{item.creator}}
+    li(ng-repeat="item in items", ng-class="{ active: (activeItem == $index), past: (activeItem > $index) }")
+      p.title {{item.label}}
+      p.creator {{item.creator}}
