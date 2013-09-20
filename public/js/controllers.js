@@ -65,6 +65,9 @@ function HangDownListCntr($scope) {
     var initialState = gapi.hangout.data.getState();
     console.log("Initial state...", initialState);
 
+    if (initialState.activeItem == undefined)
+      gapi.hangout.data.setValue('activeItem', $scope.activeItem);
+
     $scope.apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant().person.displayName;
     gapi.hangout.data.onStateChanged.add(updateSharedState);
