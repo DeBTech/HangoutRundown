@@ -56,7 +56,7 @@ function HangDownListCntr($scope) {
     console.log(StateChangedEvent);
 
     $scope.items = JSON.parse(StateChangedEvent.state.topics);
-    $scope.activeItem = StateChangedEvent.state.activeItem;
+    $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
   };
 
   // Add a callback to initialize gAPI elements.
@@ -66,7 +66,7 @@ function HangDownListCntr($scope) {
     console.log("Initial state...", initialState);
 
     if (initialState.activeItem == undefined)
-      gapi.hangout.data.setValue('activeItem', $scope.activeItem);
+      gapi.hangout.data.setValue('activeItem', $scope.activeItem.toString);
 
     $scope.apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant().person.displayName;
