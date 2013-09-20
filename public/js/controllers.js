@@ -18,7 +18,7 @@ function HangDownListCntr($scope) {
       $scope.activeItem--;
 
       // Submit changes to Google.
-      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem } );
+      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem.toString() } );
     }
   };
 
@@ -30,7 +30,7 @@ function HangDownListCntr($scope) {
       $scope.activeItem++;
 
       // Submit changes to Google.
-      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem } );
+      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem.toString() } );
     }
   };
 
