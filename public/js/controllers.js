@@ -53,12 +53,18 @@ function HangDownListCntr($scope) {
   };
 
   var updateSharedState = function(StateChangedEvent){
+    console.log(StateChangedEvent);
+
     $scope.items = JSON.parse(StateChangedEvent.state.topics);
     $scope.activeItem = StateChangedEvent.state.activeItem;
   };
 
   // Add a callback to initialize gAPI elements.
   gapi.hangout.onApiReady.add(function(eventObj){
+    // TODO: Fetch and set the current app state.
+    var initialState = gapi.hangout.data.getState();
+    console.log("Initial state...", initialState);
+
     $scope.apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant().person.displayName;
     gapi.hangout.data.onStateChanged.add(updateSharedState);
