@@ -31,7 +31,9 @@ if ('development' == app.get('env')) {
   appUrl += ':' + app.get('port');
 
   app.get('/app.xml', function(request, response){
-    response.render('app_core', { appUrl: appUrl });
+    response.render('app_core', { appUrl: appUrl }, function(err, html){
+      response.render('app_debug_wrapper', { content: html });
+    });
   });
 }
 // Production only.
