@@ -18,6 +18,7 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'test')));
 
 // Set any view options.
 // NOTE: I don't like this way of doing this.
