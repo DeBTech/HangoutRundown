@@ -18,7 +18,6 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'test')));
 
 // Set any view options.
 // NOTE: I don't like this way of doing this.
@@ -26,6 +25,7 @@ var appUrl = '//' + (process.env.URL || 'localhost');
 
 // Development only.
 if ('development' == app.get('env')) {
+  app.use(express.static(path.join(__dirname, 'test')));
   app.use(express.errorHandler());
 
   appUrl += ':' + app.get('port');
