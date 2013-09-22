@@ -36,19 +36,18 @@ function HangDownListCntr($scope) {
 
   $scope.newTopicBuffer = '';
   $scope.addNewTopic = function(){
-    // If the user has not been initialized yet, bail.
-    if ($scope.currentUser == null) return;
+    // If the gapi hasn't be initialized, bail.
+    if (!$scope.apiLive) return;
 
     // If there is no topic set, bail.
     if (!$scope.newTopicBuffer.length) return;
 
     // Otherwise, add the topic and reset the buffer.
-    $scope.items.push({ label: $scope.newTopicBuffer, creator: $scope.currentUser });
+    $scope.items.push({ label: $scope.newTopicBuffer, creator: $scope.currentUser.person.displayName });
     $scope.newTopicBuffer = '';
 
-    // TODO: Create a model to encapsulate the list and notify Google of changes.
-
     // Submit changes to Google.
+    // TODO: Come up with a better way to do this.
     gapi.hangout.data.submitDelta( { topics: JSON.stringify($scope.items) } );
   };
 
@@ -57,19 +56,27 @@ function HangDownListCntr($scope) {
 
     $scope.items = JSON.parse(StateChangedEvent.state.topics);
     $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
+
+    $scope.$apply();  // Have to do this to force the view to update.
+  };
+
+  var initGapiModel = function(){
+    // Create expected values in the shared model.
+    gapi.hangout.data.setValue('activeItem', '0');
+    gapi.hangout.data.setValue('topics', JSON.stringify([]));
   };
 
   // Add a callback to initialize gAPI elements.
   gapi.hangout.onApiReady.add(function(eventObj){
-    // TODO: Fetch and set the current app state.
+    // Fetch the current state and make sure that the model is initialized.
     var initialState = gapi.hangout.data.getState();
-    console.log("Initial state...", initialState);
+    if (initialState.activeItem == undefined) initGapiModel();
 
-    if (initialState.activeItem == undefined)
-      gapi.hangout.data.setValue('activeItem', $scope.activeItem.toString());
-
+    // Set up internal model to work with gapi.
     $scope.apiLive = true;
-    $scope.currentUser = gapi.hangout.getLocalParticipant().person.displayName;
+    $scope.currentUser = gapi.hangout.getLocalParticipant();
+
+    // Install the event handler for a change in model state.
     gapi.hangout.data.onStateChanged.add(updateSharedState);
   });
 }
