@@ -28,6 +28,7 @@ var gapi = function(gapi){
       currentState: {},
       getState: function(){ return hangout.data.currentState; },
       setValue: function(key, value){ hangout.data.currentState[key] = value; },
+      submitDelta: function(delta){ console.log(delta); },
       onStateChanged: {
         add: function(callback){ _dataChangedCallbacks.push(callback); }
       }
