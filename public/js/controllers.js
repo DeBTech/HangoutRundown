@@ -72,6 +72,8 @@ function HangDownListCntr($scope) {
     var initialState = gapi.hangout.data.getState();
     if (initialState.activeItem == undefined) initGapiModel();
 
+    // TODO: If data already exists, make sure to init with that data.
+
     // Set up internal model to work with gapi.
     $scope.apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
