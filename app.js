@@ -30,21 +30,19 @@ if ('development' == app.get('env')) {
 
   appUrl += ':' + app.get('port');
 
-  app.get('/app.xml', function(request, response){
+  app.get('/app', function(request, response){
     response.render('app_core', { appUrl: appUrl }, function(err, html){
       response.render('app_debug_wrapper', { content: html });
     });
   });
 }
-// Production only.
-else {
-  app.get('/app.xml', function(request, response){
-    response.header('Content-Type', 'application/xml');
-    response.render('app_core', { appUrl: appUrl }, function(err, html){
-      response.render('app_xml_wrapper', { content: html });
-    });
+
+app.get('/app.xml', function(request, response){
+  response.header('Content-Type', 'application/xml');
+  response.render('app_core', { appUrl: appUrl }, function(err, html){
+    response.render('app_xml_wrapper', { content: html });
   });
-}
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
