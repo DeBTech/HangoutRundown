@@ -4,16 +4,16 @@ li.past
 li.active
   color: red
 
-ul.items li
+#HangDownTopics li
   list-style-type: none
   margin-left: -1em
 
-ul.items p.title
+#HangDownTopics p.title
   font-weight: bold
   font-size: 110%
   margin-bottom: 0px
 
-ul.items p.creator
+#HangDownTopics p.creator
   font-size: 70%
   background-color: navy
   color: lightgray
@@ -21,3 +21,30 @@ ul.items p.creator
   display: inline-block
   padding: 2px 8px
   border-radius: 5px
+
+#HangDownContent
+  min-height: 100% !important
+  height: 100% !important
+  width: 100% !important
+  min-width: 100% !important
+  position: absolute
+
+#HangDownHeader
+  height: 4em
+  position: absolute
+  top 0
+
+#HangDownHeader h1
+  font-size: 1em
+
+#HangDownTopics
+  position: absolute
+  top: 4em
+  bottom: 100px
+  overflow-y: scroll
+  width: 100%
+
+#HangDownControls
+  height: 100px
+  position: absolute
+  bottom: 0

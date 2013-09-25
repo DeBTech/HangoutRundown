@@ -5,13 +5,15 @@ link(href=appUrl+"/stylesheets/style.css", rel="stylesheet", type="text/css")
 link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel="stylesheet", type="text/css")
 //link(href=appUrl+"/stylesheets/bootstrap.min.css", rel="stylesheet", type="text/css")
 #HangDownContent(ng-app='', ng-controller="HangDownListCntr")
+  header#HangDownHeader
+    h1 HangDown
   
-  ul.items
+  ul#HangDownTopics
     li(ng-repeat="item in items", ng-class="{ active: (activeItem == $index), past: (activeItem > $index) }")
       p.title {{item.label}}
       p.creator {{item.creator}}
 
-  #HangDownControls
+  footer#HangDownControls
     #HangDownButtons
       button(ng-click="regressTopic()") Regress
       button(ng-click="advanceTopic()") Advance
