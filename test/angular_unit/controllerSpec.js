@@ -35,11 +35,11 @@ describe('HangDown Controllers', function() {
     });
 
     var sampleTopics = [
-      { label: 'This is a thing.', creator: 'Bret' },
-      { label: 'This is another thing.', creator: 'Alicia' },
-      { label: 'This is a third thing.', creator: 'Frank' },
-      { label: 'This is NOT a thing.', creator: 'Jim' },
-      { label: 'This is an after thing.', creator: 'Jan' }
+      { id: '1', label: 'This is a thing.', creator: 'Bret' },
+      { id: '2', label: 'This is another thing.', creator: 'Alicia' },
+      { id: '3', label: 'This is a third thing.', creator: 'Frank' },
+      { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
+      { id: '5', label: 'This is an after thing.', creator: 'Jan' }
     ];
 
     it('should be able to advance topics', function(){
@@ -102,6 +102,49 @@ describe('HangDown Controllers', function() {
 
       // Make sure that the internal model has not changed.
       expect(scope.activeTopicIndex).toEqual(5);
+    });
+
+    //===========================================================================
+    // DELETING TOPICS
+    //===========================================================================
+    it('should be able to delete topics', function(){
+      scope.topics = sampleTopics;
+
+      // Attempt to delete a topic.
+      var topicToDelete = '4';
+      scope.deleteTopic(topicToDelete);
+
+      // Make sure that the topic is no longer present.
+      expect(scope.topics.length).toBeLessThan(sampleTopics.length);
+      for (var i = scope.topics.length - 1; i >= 0; i--) {
+        expect(scope.topics[i].id).not.toEqual(topicToDelete);
+      };
+    });
+
+    it('should gracefully ignore topics that do not exist', function(){
+      scope.topics = sampleTopics;
+
+      // Attempt to delete a non existant topic.
+      var topicToDelete = '7';
+      scope.deleteTopic(topicToDelete);
+
+      // Make sure that the topic is no longer present.
+      expect(scope.topics.length).toEqual(sampleTopics.length);
+    });
+
+    it('should not leave an active item index that is too large for the array', function(){
+      scope.topics = sampleTopics;
+      scope.activeTopicIndex = 4;
+
+      // Attempt to delete a topic.
+      var topicToDelete = '5';
+      scope.deleteTopic(topicToDelete);
+
+      // Make sure that the topic is no longer present.
+      expect(scope.topics.length).toBeLessThan(sampleTopics.length);
+
+      // Make sure that the activeTopicIndex is sensible.
+      expect(scope.activeTopicIndex).toBeLessThan(scope.topics.length);
     });
   });
 });

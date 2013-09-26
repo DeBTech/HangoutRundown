@@ -20,10 +20,6 @@ function HangDownListCntr($scope) {
     }
   };
 
-  var resetActiveTopicIndex = function(){
-    
-  };
-
   $scope.regressTopic = _apiRequiredFunction(function(){
     // Only regress if the topic is not already the first.
     if ($scope.activeTopicIndex > 0) {
