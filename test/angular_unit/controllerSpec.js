@@ -12,18 +12,18 @@ describe('HangDown Controllers', function() {
     });
 
 
-    it('should have a list of items', function() {
-      expect(scope.items).toBeDefined();
+    it('should have a list of topics', function() {
+      expect(scope.topics).toBeDefined();
     });
 
     it('should be able to add new topics', function(){
       expect(scope.newTopicBuffer).toBeDefined();
-      expect(scope.items.length).toEqual(0);
+      expect(scope.topics.length).toEqual(0);
 
       scope.newTopicBuffer = 'This is my new topic';
       scope.addNewTopic();
 
-      expect(scope.items.length).toEqual(1);
+      expect(scope.topics.length).toEqual(1);
       expect(scope.newTopicBuffer).toEqual('');
     });
 
@@ -31,7 +31,7 @@ describe('HangDown Controllers', function() {
       scope.newTopicBuffer = '';
       scope.addNewTopic();
 
-      expect(scope.items.length).toEqual(0);
+      expect(scope.topics.length).toEqual(0);
     });
 
     var sampleTopics = [
@@ -43,65 +43,65 @@ describe('HangDown Controllers', function() {
     ];
 
     it('should be able to advance topics', function(){
-      scope.items = sampleTopics;
-      scope.activeItem = 2;
+      scope.topics = sampleTopics;
+      scope.activeTopicIndex = 2;
 
       scope.advanceTopic();
-      expect(scope.activeItem).toEqual(3);
+      expect(scope.activeTopicIndex).toEqual(3);
     });
 
     it('should not advance past the end of the topic list', function(){
-      scope.items = sampleTopics;
-      scope.activeItem = scope.items.length - 1;
+      scope.topics = sampleTopics;
+      scope.activeTopicIndex = scope.topics.length - 1;
 
       scope.advanceTopic();
-      expect(scope.activeItem).toEqual(scope.items.length - 1);
+      expect(scope.activeTopicIndex).toEqual(scope.topics.length - 1);
     });
 
     it('should be able to regress topics', function(){
-      scope.items = sampleTopics;
-      scope.activeItem = 2;
+      scope.topics = sampleTopics;
+      scope.activeTopicIndex = 2;
 
       scope.regressTopic();
-      expect(scope.activeItem).toEqual(1);
+      expect(scope.activeTopicIndex).toEqual(1);
     });
 
     it('should not regress past the beginning of the topic list', function(){
-      scope.items = sampleTopics;
-      scope.activeItem = 0;
+      scope.topics = sampleTopics;
+      scope.activeTopicIndex = 0;
 
       scope.regressTopic();
-      expect(scope.activeItem).toEqual(0);
+      expect(scope.activeTopicIndex).toEqual(0);
     });
 
     it('should not apply gapi updates if self-originated', function(){
       // Set initial state.
-      scope.activeItem = 3;
+      scope.activeTopicIndex = 3;
       var currentUser = gapi.hangout.getLocalParticipant();
 
       // Attempt to push a "fake" change that originated with self.
       gapi.hangout.data.submitDelta({
-        activeItem: '5',
+        activeTopicIndex: '5',
         modifier: currentUser.id
       });
 
       // Make sure that the internal model has not changed.
-      expect(scope.activeItem).toEqual(3);
+      expect(scope.activeTopicIndex).toEqual(3);
     });
 
     it('should apply gapi updates that are not self-originated', function(){
       // Set initial state.
-      scope.activeItem = 3;
+      scope.activeTopicIndex = 3;
       var currentUser = gapi.hangout.getLocalParticipant();
 
       // Attempt to push a "fake" change that originated with self.
       gapi.hangout.data.submitDelta({
-        activeItem: '5',
+        activeTopicIndex: '5',
         modifier: '99999'
       });
 
       // Make sure that the internal model has not changed.
-      expect(scope.activeItem).toEqual(5);
+      expect(scope.activeTopicIndex).toEqual(5);
     });
   });
 });

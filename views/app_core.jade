@@ -13,10 +13,10 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   header#HangDownHeader
     h1 HangDown
   
-  ul#HangDownTopics(ui-sortable='itemSortConfig', ng-model='items')
-    li(ng-repeat="item in items", ng-class="{ active: (activeItem == $index), past: (activeItem > $index) }")
-      p.title {{item.label}}
-      p.creator {{item.creator}}
+  ul#HangDownTopics(ui-sortable='itemSortConfig', ng-model='topics')
+    li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
+      p.title {{topic.label}}
+      p.creator {{topic.creator}}
 
   footer#HangDownControls
     #HangDownButtons

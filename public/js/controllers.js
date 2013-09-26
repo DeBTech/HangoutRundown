@@ -4,65 +4,61 @@
 
 function HangDownListCntr($scope) {
   $scope.apiLive = false;
+  var _apiRequiredFunction = function(innerFunction){ return function(){
+    if ($scope.apiLive) innerFunction.apply(this, arguments);
+  }; };
 
-  $scope.items = [];
+  $scope.topics = [];
 
-  $scope.activeItem = 0;
+  $scope.activeTopicIndex = 0;
   $scope.currentUser = null;
 
   $scope.itemSortConfig = {
     update: function(e, ui){
       // TODO: Figure out the new index of the currently selected item.
-      console.log($scope.items);
+      console.log($scope.topics);
     }
   };
 
-  var resetActiveIndex = function(){
+  var resetActiveTopicIndex = function(){
     
   };
 
-  $scope.regressTopic = function(){
-    // If the API is not up yet, bail.
-    if (!$scope.apiLive) return;
-
-    if ($scope.activeItem > 0) {
-      $scope.activeItem--;
+  $scope.regressTopic = _apiRequiredFunction(function(){
+    // Only regress if the topic is not already the first.
+    if ($scope.activeTopicIndex > 0) {
+      $scope.activeTopicIndex--;
 
       // Submit changes to Google.
-      pushSharedState( { activeItem: $scope.activeItem.toString() } );
+      pushSharedState( { activeTopicIndex: $scope.activeTopicIndex.toString() } );
     }
-  };
+  });
 
-  $scope.advanceTopic = function(){
-    // If the API is not up yet, bail.
-    if (!$scope.apiLive) return;
-    
-    if ($scope.activeItem < $scope.items.length - 1) {
-      $scope.activeItem++;
+  $scope.advanceTopic = _apiRequiredFunction(function(){
+    // Only advance if the topic is not already the last.
+    if ($scope.activeTopicIndex < $scope.topics.length - 1) {
+      $scope.activeTopicIndex++;
 
       // Submit changes to Google.
-      pushSharedState( { activeItem: $scope.activeItem.toString() } );
+      pushSharedState( { activeTopicIndex: $scope.activeTopicIndex.toString() } );
     }
-  };
+  });
 
-  $scope.deleteTopic = function(topicId){
+  $scope.deleteTopic = _apiRequiredFunction(function(topicId){
     // TODO: If selected topic doesn't exist, bail.
     // TODO: If the topic is currently selected, increment the selection to the next topic.
     // TODO: Delete selected topic.
     // TODO: Refresh selected index.
     // TODO: Push state.
-  };
+  });
 
   $scope.newTopicBuffer = '';
-  $scope.addNewTopic = function(){
-    // If the gapi hasn't be initialized, bail.
-    if (!$scope.apiLive) return;
-
+  $scope.addNewTopic = _apiRequiredFunction(function(){
     // If there is no topic set, bail.
     if (!$scope.newTopicBuffer.length) return;
 
     // Otherwise, add the topic and reset the buffer.
-    $scope.items.push({
+    $scope.topics.push({
       id: new Date().getTime(),
       label: $scope.newTopicBuffer,
       creator: $scope.currentUser.person.displayName
@@ -71,13 +67,13 @@ function HangDownListCntr($scope) {
 
     // Submit changes to Google.
     // TODO: Come up with a better way to do this.
-    pushSharedState( { topics: JSON.stringify($scope.items) } );
-  };
+    pushSharedState( { topics: JSON.stringify($scope.topics) } );
+  });
 
   var initGapiModel = function(){
     // Create expected values in the shared model.
     gapi.hangout.data.submitDelta({
-      activeItem: '0',
+      activeTopicIndex: '0',
       topics: JSON.stringify([])
     });
   };
@@ -94,8 +90,8 @@ function HangDownListCntr($scope) {
     // If the current shared state update was self-originated, skip.
     if (StateChangedEvent.state.modifier == $scope.currentUser.id) return;
 
-    $scope.items = JSON.parse(StateChangedEvent.state.topics);
-    $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
+    $scope.topics = JSON.parse(StateChangedEvent.state.topics);
+    $scope.activeTopicIndex = parseInt(StateChangedEvent.state.activeTopicIndex);
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
@@ -104,7 +100,7 @@ function HangDownListCntr($scope) {
   gapi.hangout.onApiReady.add(function(eventObj){
     // Fetch the current state and make sure that the model is initialized.
     var initialState = gapi.hangout.data.getState();
-    if (initialState.activeItem == undefined) initGapiModel();
+    if (initialState.activeTopicIndex == undefined) initGapiModel();
 
     // TODO: If data already exists, make sure to init with that data.
 
