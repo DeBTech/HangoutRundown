@@ -77,8 +77,8 @@ function HangDownListCntr($scope) {
     $scope.newTopicBuffer = '';
 
     // Push add all topics.
-    for (var i = newTopics.length - 1; i >= 0; i--) {
-      $scope.topics.unshift(createTopic(newTopics[i].trim()));
+    for (var i = 0; i < newTopics.length; i++) {
+      $scope.topics.push(createTopic(newTopics[i].trim()));
     };
 
     // Submit changes to Google.
