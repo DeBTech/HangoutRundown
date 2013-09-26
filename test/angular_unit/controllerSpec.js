@@ -6,7 +6,8 @@ describe('HangDown Controllers', function() {
     var scope, ctrl;
 
     beforeEach(function(){
-      scope = {},
+      scope = { '$apply': function(){} },
+      gapi.hangout.data.currentState = {},
       ctrl = new HangDownListCntr(scope)
     });
 
@@ -71,6 +72,36 @@ describe('HangDown Controllers', function() {
 
       scope.regressTopic();
       expect(scope.activeItem).toEqual(0);
+    });
+
+    it('should not apply gapi updates if self-originated', function(){
+      // Set initial state.
+      scope.activeItem = 3;
+      var currentUser = gapi.hangout.getLocalParticipant();
+
+      // Attempt to push a "fake" change that originated with self.
+      gapi.hangout.data.submitDelta({
+        activeItem: '5',
+        modifier: currentUser.id
+      });
+
+      // Make sure that the internal model has not changed.
+      expect(scope.activeItem).toEqual(3);
+    });
+
+    it('should apply gapi updates that are not self-originated', function(){
+      // Set initial state.
+      scope.activeItem = 3;
+      var currentUser = gapi.hangout.getLocalParticipant();
+
+      // Attempt to push a "fake" change that originated with self.
+      gapi.hangout.data.submitDelta({
+        activeItem: '5',
+        modifier: '99999'
+      });
+
+      // Make sure that the internal model has not changed.
+      expect(scope.activeItem).toEqual(5);
     });
   });
 });

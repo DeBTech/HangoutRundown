@@ -29,7 +29,7 @@ function HangDownListCntr($scope) {
       $scope.activeItem--;
 
       // Submit changes to Google.
-      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem.toString() } );
+      pushSharedState( { activeItem: $scope.activeItem.toString() } );
     }
   };
 
@@ -41,7 +41,7 @@ function HangDownListCntr($scope) {
       $scope.activeItem++;
 
       // Submit changes to Google.
-      gapi.hangout.data.submitDelta( { activeItem: $scope.activeItem.toString() } );
+      pushSharedState( { activeItem: $scope.activeItem.toString() } );
     }
   };
 
@@ -71,20 +71,33 @@ function HangDownListCntr($scope) {
 
     // Submit changes to Google.
     // TODO: Come up with a better way to do this.
-    gapi.hangout.data.submitDelta( { topics: JSON.stringify($scope.items) } );
-  };
-
-  var applySharedState = function(StateChangedEvent){
-    $scope.items = JSON.parse(StateChangedEvent.state.topics);
-    $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
-
-    $scope.$apply();  // Have to do this to force the view to update.
+    pushSharedState( { topics: JSON.stringify($scope.items) } );
   };
 
   var initGapiModel = function(){
     // Create expected values in the shared model.
-    gapi.hangout.data.setValue('activeItem', '0');
-    gapi.hangout.data.setValue('topics', JSON.stringify([]));
+    gapi.hangout.data.submitDelta({
+      activeItem: '0',
+      topics: JSON.stringify([])
+    });
+  };
+
+  var pushSharedState = function(StateDelta){
+    // First, set the current updater.
+    StateDelta.modifier = $scope.currentUser.id;
+
+    // Then submit the delta to GAPI.
+    gapi.hangout.data.submitDelta( StateDelta );
+  };
+
+  var applySharedState = function(StateChangedEvent){
+    // If the current shared state update was self-originated, skip.
+    if (StateChangedEvent.state.modifier == $scope.currentUser.id) return;
+
+    $scope.items = JSON.parse(StateChangedEvent.state.topics);
+    $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
+
+    $scope.$apply();  // Have to do this to force the view to update.
   };
 
   // Add a callback to initialize gAPI elements.
