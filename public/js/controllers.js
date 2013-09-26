@@ -15,8 +15,8 @@ function HangDownListCntr($scope) {
 
   $scope.itemSortConfig = {
     update: function(e, ui){
-      // TODO: Figure out the new index of the currently selected item.
-      console.log($scope.topics);
+      // Push state.
+      pushSharedState({ topics: JSON.stringify($scope.topics) });
     }
   };
 
