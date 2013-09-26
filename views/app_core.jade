@@ -1,14 +1,19 @@
-script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js")
+script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+script(src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js")
+script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.5/angular.min.js")
+// script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js")
+script(src=appUrl+"/js/angular.ui.sortable.js")
 //script(src=appUrl+"/js/angular.min.js")
+script(src=appUrl+"/js/app.js")
 script(src=appUrl+"/js/controllers.js")
 link(href=appUrl+"/stylesheets/style.css", rel="stylesheet", type="text/css")
 link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel="stylesheet", type="text/css")
 //link(href=appUrl+"/stylesheets/bootstrap.min.css", rel="stylesheet", type="text/css")
-#HangDownContent(ng-app='', ng-controller="HangDownListCntr")
+#HangDownContent(ng-app='HangDown', ng-controller="HangDownListCntr")
   header#HangDownHeader
     h1 HangDown
   
-  ul#HangDownTopics
+  ul#HangDownTopics(ui-sortable='itemSortConfig', ng-model='items')
     li(ng-repeat="item in items", ng-class="{ active: (activeItem == $index), past: (activeItem > $index) }")
       p.title {{item.label}}
       p.creator {{item.creator}}
