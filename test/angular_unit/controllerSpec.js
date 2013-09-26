@@ -39,6 +39,18 @@ describe('HangDown Controllers', function() {
       expect(scope.topics.length).toEqual(0);
     });
 
+    it('should be able to add multiple topics at once, divided by ";;"', function(){
+      // Attempt to add multiple items.
+      scope.newTopicBuffer = ' Thing 1;; Thing 2 ;;Thing3 ';
+      scope.addNewTopic();
+
+      // Check to make sure that the topics have been added.
+      expect(scope.topics.length).toEqual(3);
+      expect(scope.topics[0].label).toEqual('Thing 1');
+      expect(scope.topics[1].label).toEqual('Thing 2');
+      expect(scope.topics[2].label).toEqual('Thing3');
+    });
+
     var sampleTopics = [
       { id: '1', label: 'This is a thing.', creator: 'Bret' },
       { id: '2', label: 'This is another thing.', creator: 'Alicia' },

@@ -59,18 +59,27 @@ function HangDownListCntr($scope) {
     pushSharedState( newState );
   });
 
+  var createTopic = function(newLabel){
+    return {
+      id: new Date().getTime(),         // TODO: Have a better id.
+      label: newLabel,
+      creator: $scope.currentUser.person.displayName
+    };
+  };
+
   $scope.newTopicBuffer = '';
   $scope.addNewTopic = _apiRequiredFunction(function(){
     // If there is no topic set, bail.
     if (!$scope.newTopicBuffer.length) return;
 
-    // Otherwise, add the topic and reset the buffer.
-    $scope.topics.push({
-      id: new Date().getTime(),
-      label: $scope.newTopicBuffer,
-      creator: $scope.currentUser.person.displayName
-    });
+    // If there are any ';;', break the topic into multiple topics.
+    var newTopics = $scope.newTopicBuffer.split(';;');
     $scope.newTopicBuffer = '';
+
+    // Push add all topics.
+    for (var i = newTopics.length - 1; i >= 0; i--) {
+      $scope.topics.unshift(createTopic(newTopics[i].trim()));
+    };
 
     // Submit changes to Google.
     pushSharedState( { topics: JSON.stringify($scope.topics) } );
