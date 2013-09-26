@@ -11,11 +11,16 @@ describe('HangDown Controllers', function() {
       ctrl = new HangDownListCntr(scope)
     });
 
-
+    //===========================================================================
+    // INITILIZATIONS
+    //===========================================================================
     it('should have a list of topics', function() {
       expect(scope.topics).toBeDefined();
     });
 
+    //===========================================================================
+    // ADDING TOPICS
+    //===========================================================================
     it('should be able to add new topics', function(){
       expect(scope.newTopicBuffer).toBeDefined();
       expect(scope.topics.length).toEqual(0);
@@ -42,6 +47,9 @@ describe('HangDown Controllers', function() {
       { id: '5', label: 'This is an after thing.', creator: 'Jan' }
     ];
 
+    //===========================================================================
+    // NAVIGATING TOPICS
+    //===========================================================================
     it('should be able to advance topics', function(){
       scope.topics = sampleTopics;
       scope.activeTopicIndex = 2;
@@ -74,6 +82,9 @@ describe('HangDown Controllers', function() {
       expect(scope.activeTopicIndex).toEqual(0);
     });
 
+    //===========================================================================
+    // GAPI UPDATES
+    //===========================================================================
     it('should not apply gapi updates if self-originated', function(){
       // Set initial state.
       scope.activeTopicIndex = 3;
