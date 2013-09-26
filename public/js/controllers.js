@@ -10,6 +10,17 @@ function HangDownListCntr($scope) {
   $scope.activeItem = 0;
   $scope.currentUser = null;
 
+  $scope.itemSortConfig = {
+    update: function(e, ui){
+      // TODO: Figure out the new index of the currently selected item.
+      console.log($scope.items);
+    }
+  };
+
+  var resetActiveIndex = function(){
+    
+  };
+
   $scope.regressTopic = function(){
     // If the API is not up yet, bail.
     if (!$scope.apiLive) return;
@@ -34,6 +45,14 @@ function HangDownListCntr($scope) {
     }
   };
 
+  $scope.deleteTopic = function(topicId){
+    // TODO: If selected topic doesn't exist, bail.
+    // TODO: If the topic is currently selected, increment the selection to the next topic.
+    // TODO: Delete selected topic.
+    // TODO: Refresh selected index.
+    // TODO: Push state.
+  };
+
   $scope.newTopicBuffer = '';
   $scope.addNewTopic = function(){
     // If the gapi hasn't be initialized, bail.
@@ -43,7 +62,11 @@ function HangDownListCntr($scope) {
     if (!$scope.newTopicBuffer.length) return;
 
     // Otherwise, add the topic and reset the buffer.
-    $scope.items.push({ label: $scope.newTopicBuffer, creator: $scope.currentUser.person.displayName });
+    $scope.items.push({
+      id: new Date().getTime(),
+      label: $scope.newTopicBuffer,
+      creator: $scope.currentUser.person.displayName
+    });
     $scope.newTopicBuffer = '';
 
     // Submit changes to Google.
@@ -51,9 +74,7 @@ function HangDownListCntr($scope) {
     gapi.hangout.data.submitDelta( { topics: JSON.stringify($scope.items) } );
   };
 
-  var updateSharedState = function(StateChangedEvent){
-    console.log(StateChangedEvent);
-
+  var applySharedState = function(StateChangedEvent){
     $scope.items = JSON.parse(StateChangedEvent.state.topics);
     $scope.activeItem = parseInt(StateChangedEvent.state.activeItem);
 
@@ -79,7 +100,7 @@ function HangDownListCntr($scope) {
     $scope.currentUser = gapi.hangout.getLocalParticipant();
 
     // Install the event handler for a change in model state.
-    gapi.hangout.data.onStateChanged.add(updateSharedState);
+    gapi.hangout.data.onStateChanged.add(applySharedState);
   });
 }
 
