@@ -40,12 +40,23 @@ function HangDownListCntr($scope) {
     }
   });
 
-  $scope.deleteTopic = _apiRequiredFunction(function(topicId){
-    // TODO: If selected topic doesn't exist, bail.
-    // TODO: If the topic is currently selected, increment the selection to the next topic.
-    // TODO: Delete selected topic.
-    // TODO: Refresh selected index.
-    // TODO: Push state.
+  $scope.deleteTopic = _apiRequiredFunction(function(deleteTopicId){
+    // Filter the array.
+    var initialLength = $scope.topics.length;
+    $scope.topics = $scope.topics.filter(function(topic){ return topic.id != deleteTopicId; });
+
+    // If the length hasn't changed, we're done.
+    if (initialLength == $scope.topics.length) return;
+    var newState = { topics: JSON.stringify( $scope.topics ) };
+
+    // If the activeTopicIndex is beyond the end of the list, correct that.
+    if ($scope.activeTopicIndex >= $scope.topics.length) {
+      $scope.activeTopicIndex = $scope.topics.length - 1;
+      newState.activeTopicIndex = $scope.activeTopicIndex;
+    }
+
+    // Push state.
+    pushSharedState( newState );
   });
 
   $scope.newTopicBuffer = '';
@@ -62,7 +73,6 @@ function HangDownListCntr($scope) {
     $scope.newTopicBuffer = '';
 
     // Submit changes to Google.
-    // TODO: Come up with a better way to do this.
     pushSharedState( { topics: JSON.stringify($scope.topics) } );
   });
 
