@@ -17,6 +17,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
     li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
       p.title {{topic.label}}
       p.creator {{topic.creator}}
+      button(ng-click="deleteTopic({{topic.id}})").delete-topic Delete
 
   footer#HangDownControls
     #HangDownButtons
