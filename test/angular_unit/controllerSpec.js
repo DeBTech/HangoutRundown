@@ -34,6 +34,21 @@ describe('HangDown Controllers', function() {
       expect(scope.topics).toBeDefined();
     });
 
+    it('should initialize with the shared state if one already exists', function(){
+      // Create a shared state.
+      gapi.hangout.data.currentState = {
+        topics: JSON.stringify(sampleTopics),
+        activeTopicId: '4'
+      };
+
+      // For a new controller to be created.
+      ctrl = new HangDownListCntr(scope);
+
+      // Make sure that the initial state is correct.
+      expect(scope.topics.length).toEqual(sampleTopics.length);
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('4');
+    });
+
     //===========================================================================
     // ADDING TOPICS
     //===========================================================================

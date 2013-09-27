@@ -6,7 +6,7 @@ You know, a rundown. For Hangouts. What part didn't you get?
 
 TODO
 ====
-- Initialize with shared state when launching.
+- Improve visuals.
 - Keep a clock for whole conversation and current topic.
 - Enable pausing?
 - Enable conversation moderator (admin).
