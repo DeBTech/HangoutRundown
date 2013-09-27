@@ -5,10 +5,25 @@ describe('HangDown Controllers', function() {
   describe('HangDownListCntr', function(){
     var scope, ctrl;
 
+    var sampleTopics = [
+      { id: '1', label: 'This is a thing.', creator: 'Bret' },
+      { id: '2', label: 'This is another thing.', creator: 'Alicia' },
+      { id: '3', label: 'This is a third thing.', creator: 'Frank' },
+      { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
+      { id: '5', label: 'This is an after thing.', creator: 'Jan' }
+    ];
+
     beforeEach(function(){
+      // Create a clean scope.
       scope = { '$apply': function(){} },
+
+      // Create a clean shared state.
       gapi.hangout.data.currentState = {},
+
+      // Initialize the a clean controller.
       ctrl = new HangDownListCntr(scope)
+
+      gapi.isEnabled = false;
     });
 
     //===========================================================================
@@ -51,14 +66,6 @@ describe('HangDown Controllers', function() {
       expect(scope.topics[2].label).toEqual('Thing3');
     });
 
-    var sampleTopics = [
-      { id: '1', label: 'This is a thing.', creator: 'Bret' },
-      { id: '2', label: 'This is another thing.', creator: 'Alicia' },
-      { id: '3', label: 'This is a third thing.', creator: 'Frank' },
-      { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
-      { id: '5', label: 'This is an after thing.', creator: 'Jan' }
-    ];
-
     //===========================================================================
     // NAVIGATING TOPICS
     //===========================================================================
@@ -99,6 +106,7 @@ describe('HangDown Controllers', function() {
     //===========================================================================
     it('should not apply gapi updates if self-originated', function(){
       // Set initial state.
+      gapi.isEnabled = true;
       scope.activeTopicIndex = 3;
       var currentUser = gapi.hangout.getLocalParticipant();
 
@@ -114,16 +122,19 @@ describe('HangDown Controllers', function() {
 
     it('should apply gapi updates that are not self-originated', function(){
       // Set initial state.
+      gapi.isEnabled = true;
+      gapi.hangout.data.currentState = { topics: JSON.stringify(sampleTopics) };
       scope.activeTopicIndex = 3;
-      var currentUser = gapi.hangout.getLocalParticipant();
 
       // Attempt to push a "fake" change that originated with self.
       gapi.hangout.data.submitDelta({
-        activeTopicIndex: '5',
+        activeTopicId: JSON.stringify('5'),
         modifier: '99999'
       });
 
       // Make sure that the internal model has not changed.
+      expect(scope.activeTopicIndex).toEqual(4);
+    });
       expect(scope.activeTopicIndex).toEqual(5);
     });
 
