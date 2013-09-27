@@ -3,15 +3,7 @@
 /* jasmine specs for controllers go here */
 describe('HangDown Controllers', function() {
   describe('HangDownListCntr', function(){
-    var scope, ctrl;
-
-    var sampleTopics = [
-      { id: '1', label: 'This is a thing.', creator: 'Bret' },
-      { id: '2', label: 'This is another thing.', creator: 'Alicia' },
-      { id: '3', label: 'This is a third thing.', creator: 'Frank' },
-      { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
-      { id: '5', label: 'This is an after thing.', creator: 'Jan' }
-    ];
+    var scope, ctrl, sampleTopics;
 
     beforeEach(function(){
       // Create a clean scope.
@@ -21,7 +13,16 @@ describe('HangDown Controllers', function() {
       gapi.hangout.data.currentState = {},
 
       // Initialize the a clean controller.
-      ctrl = new HangDownListCntr(scope)
+      ctrl = new HangDownListCntr(scope),
+
+      // Make sure that sample topics are refreshed each test.
+      sampleTopics = [
+        { id: '1', label: 'This is a thing.', creator: 'Bret' },
+        { id: '2', label: 'This is another thing.', creator: 'Alicia' },
+        { id: '3', label: 'This is a third thing.', creator: 'Frank' },
+        { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
+        { id: '5', label: 'This is an after thing.', creator: 'Jan' }
+      ];
 
       gapi.isEnabled = false;
     });
@@ -135,7 +136,29 @@ describe('HangDown Controllers', function() {
       // Make sure that the internal model has not changed.
       expect(scope.activeTopicIndex).toEqual(4);
     });
+
+    //===========================================================================
+    // REORDERING TOPICS
+    //===========================================================================
+    it('should not change the active topic if the list is reordered', function(){
+      // Send a message to prime the system.
+      scope.topics = sampleTopics;
+      scope.newTopicBuffer = 'Demo Topic';  // Add another topic to force a selected ID.
+      scope.addNewTopic();
+
+      // Verify that the correct topic is selected.
+      expect(scope.activeTopicIndex).toEqual(0);
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('1');
+
+      // Change the order locally.
+      scope.topics = scope.topics.reverse();
+
+      // Signal that the order has changed.
+      scope.topicSortConfig.stop({}, {});
+
+      // Verify that the same topic is still selected.
       expect(scope.activeTopicIndex).toEqual(5);
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('1');
     });
 
     //===========================================================================
@@ -166,19 +189,65 @@ describe('HangDown Controllers', function() {
       expect(scope.topics.length).toEqual(sampleTopics.length);
     });
 
+    it('should not change the active topic if a previous topic is deleted', function(){
+      scope.topics = sampleTopics;
+
+      // Set up the current selection.
+      scope.goToTopic('3');
+
+      // Current topic should be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('3');
+
+      // Attempt to delete a topic.
+      var topicToDelete = '1';
+      scope.deleteTopic(topicToDelete);
+
+      // Current topic should still be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('3');
+    });
+
+    it('should select the next topic if the current topic is deleted', function(){
+      scope.topics = sampleTopics;
+
+      // Set up the current selection.
+      scope.goToTopic('3');
+
+      // Current topic should be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('3');
+
+      // Attempt to delete a topic.
+      var topicToDelete = '3';
+      scope.deleteTopic(topicToDelete);
+
+      // Current topic should still be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('4');
+    });
+
     it('should not leave an active item index that is too large for the array', function(){
       scope.topics = sampleTopics;
-      scope.activeTopicIndex = 4;
+
+      // Set up the current selection.
+      scope.goToTopic('5');
+
+      // Current topic should be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('5');
 
       // Attempt to delete a topic.
       var topicToDelete = '5';
       scope.deleteTopic(topicToDelete);
 
-      // Make sure that the topic is no longer present.
-      expect(scope.topics.length).toBeLessThan(sampleTopics.length);
+      // Current topic should still be '3'.
+      expect(scope.topics[scope.activeTopicIndex].id).toEqual('4');
+    });
 
-      // Make sure that the activeTopicIndex is sensible.
-      expect(scope.activeTopicIndex).toBeLessThan(scope.topics.length);
+    it('should gracefully handle deleting the only topic', function(){
+      scope.newTopicBuffer = 'Demo topic.';
+      scope.addNewTopic();
+
+      expect(scope.topics.length).toBeGreaterThan(0);
+      var topicId = scope.topics[0].id;
+      scope.deleteTopic(topicId);
+      expect(scope.topics.length).toEqual(0);
     });
   });
 });

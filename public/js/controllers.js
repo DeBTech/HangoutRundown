@@ -10,58 +10,65 @@ function HangDownListCntr($scope) {
 
   $scope.topics = [];
 
+  var activeTopicId = null;
   $scope.activeTopicIndex = 0;
   $scope.currentUser = null;
 
-  $scope.itemSortConfig = {
-    update: function(e, ui){
+  var resetActiveTopicIndex = function(){
+    var activeIndex = 0;
+
+    for (var i = $scope.topics.length - 1; i >= 0; i--) {
+      if ($scope.topics[i].id == activeTopicId) {
+        activeIndex = i;
+        break;
+      }
+    };
+
+    $scope.activeTopicIndex = activeIndex;
+  };
+
+  $scope.topicSortConfig = {
+    stop: function(e, ui){
+      // First, make sure that the active index is correct.
+      resetActiveTopicIndex();
+
       // Push state.
-      pushSharedState({ topics: JSON.stringify($scope.topics) });
+      pushSharedState();
     }
+  };
+
+  $scope.goToTopic = function(topicId){
+    // TODO: If we keep this function around, make sure to check for non-existent IDs.
+    activeTopicId = topicId;
+    resetActiveTopicIndex();
   };
 
   $scope.regressTopic = _apiRequiredFunction(function(){
     // Only regress if the topic is not already the first.
     if ($scope.activeTopicIndex > 0) {
-      $scope.activeTopicIndex--;
+      activeTopicId = $scope.topics[$scope.activeTopicIndex-1].id;
+      resetActiveTopicIndex();
 
       // Submit changes to Google.
-      pushSharedState( { activeTopicIndex: $scope.activeTopicIndex.toString() } );
+      pushSharedState();
     }
   });
 
   $scope.advanceTopic = _apiRequiredFunction(function(){
     // Only advance if the topic is not already the last.
     if ($scope.activeTopicIndex < $scope.topics.length - 1) {
-      $scope.activeTopicIndex++;
+      activeTopicId = $scope.topics[$scope.activeTopicIndex+1].id;
+      resetActiveTopicIndex();
 
       // Submit changes to Google.
-      pushSharedState( { activeTopicIndex: $scope.activeTopicIndex.toString() } );
+      pushSharedState();
     }
   });
 
-  $scope.deleteTopic = _apiRequiredFunction(function(deleteTopicId){
-    // Filter the array.
-    var initialLength = $scope.topics.length;
-    $scope.topics = $scope.topics.filter(function(topic){ return topic.id != deleteTopicId; });
-
-    // If the length hasn't changed, we're done.
-    if (initialLength == $scope.topics.length) return;
-    var newState = { topics: JSON.stringify( $scope.topics ) };
-
-    // If the activeTopicIndex is beyond the end of the list, correct that.
-    if ($scope.activeTopicIndex >= $scope.topics.length) {
-      $scope.activeTopicIndex = $scope.topics.length - 1;
-      newState.activeTopicIndex = $scope.activeTopicIndex;
-    }
-
-    // Push state.
-    pushSharedState( newState );
-  });
-
+  var _topicIndex = 0;
   var createTopic = function(newLabel){
     return {
-      id: new Date().getTime(),         // TODO: Have a better id.
+      id: new Date().getTime() + '-' + _topicIndex++,         // Still don't like this way of doing it.
       label: newLabel,
       creator: $scope.currentUser.person.displayName
     };
@@ -81,20 +88,58 @@ function HangDownListCntr($scope) {
       $scope.topics.push(createTopic(newTopics[i].trim()));
     };
 
+    // If there is no active topic yet, set the active topic.
+    if (activeTopicId == null) {
+      activeTopicId = $scope.topics[0].id;
+      $scope.activeTopicIndex = 0;
+    }
+
     // Submit changes to Google.
-    pushSharedState( { topics: JSON.stringify($scope.topics) } );
+    pushSharedState();
+  });
+
+  $scope.deleteTopic = _apiRequiredFunction(function(deleteTopicId){
+    // If we're about to delete the current topic,
+    // determine the next topic to select.
+    if (deleteTopicId == activeTopicId) {
+      // If the next topic exists, use it.
+      if ($scope.topics[$scope.activeTopicIndex+1]) activeTopicId = $scope.topics[$scope.activeTopicIndex+1].id;
+      else if ($scope.topics[$scope.activeTopicIndex-1]) activeTopicId = $scope.topics[$scope.activeTopicIndex-1].id;
+      else activeTopicId = null;
+    }
+
+    // Filter the array.
+    var initialLength = $scope.topics.length;
+    $scope.topics = $scope.topics.filter(function(topic){ return topic.id != deleteTopicId; });
+
+    // If the length hasn't changed, we're done.
+    if (initialLength == $scope.topics.length) return;
+
+    // Reset the active index.
+    resetActiveTopicIndex();
+
+    // Push state.
+    pushSharedState();
   });
 
   var initGapiModel = function(){
     // Create expected values in the shared model.
     gapi.hangout.data.submitDelta({
-      activeTopicIndex: '0',
+      activeTopicId: JSON.stringify(null),
       topics: JSON.stringify([])
     });
   };
 
   var pushSharedState = function(StateDelta){
-    // First, set the current updater.
+    // If there was no state provided, just push the whole system.
+    if (!StateDelta) {
+      StateDelta = {
+        activeTopicId: JSON.stringify(activeTopicId),
+        topics: JSON.stringify($scope.topics)
+      };
+    }
+
+    // Next, set the current updater.
     StateDelta.modifier = $scope.currentUser.id;
 
     // Then submit the delta to GAPI.
@@ -105,8 +150,12 @@ function HangDownListCntr($scope) {
     // If the current shared state update was self-originated, skip.
     if (StateChangedEvent.state.modifier == $scope.currentUser.id) return;
 
+    // Update the internal model.
     $scope.topics = JSON.parse(StateChangedEvent.state.topics);
-    $scope.activeTopicIndex = parseInt(StateChangedEvent.state.activeTopicIndex);
+    activeTopicId = JSON.parse(StateChangedEvent.state.activeTopicId);
+
+    // Make sure that the activeTopicIndex is updated.
+    resetActiveTopicIndex();
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
@@ -115,7 +164,7 @@ function HangDownListCntr($scope) {
   gapi.hangout.onApiReady.add(function(eventObj){
     // Fetch the current state and make sure that the model is initialized.
     var initialState = gapi.hangout.data.getState();
-    if (initialState.activeTopicIndex == undefined) initGapiModel();
+    if (initialState.activeTopicId == undefined) initGapiModel();
 
     // TODO: If data already exists, make sure to init with that data.
 

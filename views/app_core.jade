@@ -13,16 +13,16 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   header#HangDownHeader
     h1 HangDown
   
-  ul#HangDownTopics(ui-sortable='itemSortConfig', ng-model='topics')
+  ul#HangDownTopics(ui-sortable='topicSortConfig', ng-model='topics')
     li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
       p.title {{topic.label}}
       p.creator {{topic.creator}}
-      button(ng-click="deleteTopic({{topic.id}})").delete-topic Delete
+      button(ng-click="deleteTopic('{{topic.id}}')").delete-topic Delete
 
   footer#HangDownControls
     #HangDownButtons
       button(ng-click="regressTopic()") Regress
       button(ng-click="advanceTopic()") Advance
-    form(ng-submit="addNewTopic()")
+    form(ng-submit="addNewTopic(newTopicBuffer); newTopicBuffer='';")
       input(ng-model="newTopicBuffer")
-      button(ng-click="addNewTopic()", type="submit") Add
+      button(type="submit") Add
