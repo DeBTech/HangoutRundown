@@ -1,3 +1,39 @@
+#HangDownContent
+  min-height: 100% !important
+  height: 100% !important
+  width: 100% !important
+  min-width: 100% !important
+  position: absolute
+
+
+
+
+#HangDownHeader
+  height: 4em
+  position: absolute
+  top 0
+  text-align: center
+  width: 100%
+  background-color: lightblue
+
+#HangDownHeader h1
+  font-size: 1.5em
+  padding: 0px
+  margin: 5px 0px
+
+#HangDownHeader p
+  font-size: 0.9em
+
+
+
+
+#HangDownTopics
+  position: absolute
+  top: 4em
+  bottom: 100px
+  overflow-y: scroll
+  width: 100%
+
 li.past
   color: lightgray
 
@@ -8,6 +44,7 @@ li.active
   list-style-type: none
   margin-left: -1em
   cursor: pointer
+  text-align: center
 
 #HangDownTopics p.title
   font-weight: bold
@@ -23,29 +60,27 @@ li.active
   padding: 2px 8px
   border-radius: 5px
 
-#HangDownContent
-  min-height: 100% !important
-  height: 100% !important
-  width: 100% !important
-  min-width: 100% !important
-  position: absolute
+#HangDownTopics button
+  margin-left: 10px
+  font-size: 0.8em
 
-#HangDownHeader
-  height: 4em
-  position: absolute
-  top 0
 
-#HangDownHeader h1
-  font-size: 1em
 
-#HangDownTopics
-  position: absolute
-  top: 4em
-  bottom: 100px
-  overflow-y: scroll
-  width: 100%
 
 #HangDownControls
   height: 100px
   position: absolute
   bottom: 0
+  width: 100%
+  text-align: center
+
+#HangDownButtons
+  margin-bottom: 5px
+
+#HangDownButtons button:first-child
+  border-bottom-left-radius: 10px
+  border-top-left-radius: 10px
+
+#HangDownButtons button:last-child
+  border-bottom-right-radius: 10px
+  border-top-right-radius: 10px

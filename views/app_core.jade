@@ -12,6 +12,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
 #HangDownContent(ng-app='HangDown', ng-controller="HangDownListCntr")
   header#HangDownHeader
     h1 HangDown
+    p#HangDownTagLine Conversations on Point
   
   ul#HangDownTopics(ui-sortable='topicSortConfig', ng-model='topics')
     li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
