@@ -68,7 +68,7 @@ function HangDownListCntr($scope) {
   var _topicIndex = 0;
   var createTopic = function(newLabel){
     return {
-      id: new Date().getTime() + '-' + _topicIndex++,         // Still don't like this way of doing it.
+      id: new Date().getTime() + '-' + $scope.currentUser.id + '-' + _topicIndex++,
       label: newLabel,
       creator: $scope.currentUser.person.displayName
     };
