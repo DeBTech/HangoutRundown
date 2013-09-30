@@ -130,29 +130,34 @@ function HangDownListCntr($scope) {
     });
   };
 
-  var pushSharedState = function(StateDelta){
+  var pushSharedState = function(stateDelta){
     // If there was no state provided, just push the whole system.
-    if (!StateDelta) {
-      StateDelta = {
+    if (!stateDelta) {
+      stateDelta = {
         activeTopicId: JSON.stringify(activeTopicId),
         topics: JSON.stringify($scope.topics)
       };
     }
 
     // Next, set the current updater.
-    StateDelta.modifier = $scope.currentUser.id;
+    stateDelta.modifier = $scope.currentUser.id;
 
     // Then submit the delta to GAPI.
-    gapi.hangout.data.submitDelta( StateDelta );
+    gapi.hangout.data.submitDelta( stateDelta );
   };
 
-  var applySharedState = function(StateChangedEvent){
+  var processStateUpdate = function(stateChangedEvent){
     // If the current shared state update was self-originated, skip.
-    if (StateChangedEvent.state.modifier == $scope.currentUser.id) return;
+    if (stateChangedEvent.state.modifier == $scope.currentUser.id) return;
 
+    // Otherwise, apply the shared state.
+    applySharedState(stateChangedEvent.state);
+  };
+
+  var applySharedState = function(newState){
     // Update the internal model.
-    $scope.topics = JSON.parse(StateChangedEvent.state.topics);
-    activeTopicId = JSON.parse(StateChangedEvent.state.activeTopicId);
+    $scope.topics = JSON.parse(newState.topics);
+    activeTopicId = JSON.parse(newState.activeTopicId);
 
     // Make sure that the activeTopicIndex is updated.
     resetActiveTopicIndex();
@@ -162,18 +167,19 @@ function HangDownListCntr($scope) {
 
   // Add a callback to initialize gAPI elements.
   gapi.hangout.onApiReady.add(function(eventObj){
-    // Fetch the current state and make sure that the model is initialized.
     var initialState = gapi.hangout.data.getState();
-    if (initialState.activeTopicId == undefined) initGapiModel();
 
-    // TODO: If data already exists, make sure to init with that data.
+    // If the state has not been initialized, do that now.
+    if (initialState.activeTopicId == undefined) initGapiModel();
+    // Otherwise, update internal state with shared state.
+    else applySharedState(initialState);
 
     // Set up internal model to work with gapi.
     $scope.apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
 
     // Install the event handler for a change in model state.
-    gapi.hangout.data.onStateChanged.add(applySharedState);
+    gapi.hangout.data.onStateChanged.add(processStateUpdate);
   });
 }
 
