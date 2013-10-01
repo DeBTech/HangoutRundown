@@ -312,5 +312,21 @@ describe('HangDown Controllers', function() {
       scope.deleteTopic(topicId);
       expect(scope.topics.length).toEqual(0);
     });
+
+    //===========================================================================
+    // MISC
+    //===========================================================================
+    it('should be able to format timestamp differences in a conversation-readable way', function(){
+      expect(scope.formatDuration).toBeDefined();
+
+      // First, create a known timestamp.
+      var currentTime = new Date().getTime();
+      // Subtract a predicatable number of seconds. 1 hr, 13 min, 30 sec
+      var pastTime = currentTime - (1*60*60 + 13*60 + 30);
+
+      var formattedDuration = scope.formatDuration(pastTime);
+
+      expect(formattedDuration).toMatch(/[0-9]*1:13:3[0-9]/);
+    });
   });
 });

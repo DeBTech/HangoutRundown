@@ -45,6 +45,23 @@ function HangDownListCntr($scope) {
     resetActiveTopicIndex();
   };
 
+  $scope.formatDuration = function(fromTime){
+    var timeDiff = new Date().getTime() - fromTime;
+
+    var hours = parseInt(timeDiff / (60*60));
+    var hourRem = timeDiff % (60*60);
+    var minutes = parseInt(hourRem / (60));
+    var seconds = hourRem % (60);
+
+    var result = hours.toString() + ":";
+    if (minutes < 10) result += "0";
+    result += minutes.toString() + ":";
+    if (seconds < 10) result += "0";
+    result += seconds.toString();
+
+    return result;
+  };
+
   $scope.regressTopic = _apiRequiredFunction(function(){
     // Only regress if the topic is not already the first.
     if ($scope.activeTopicIndex > 0) {
