@@ -17,11 +17,11 @@ describe('HangDown Controllers', function() {
 
       // Make sure that sample topics are refreshed each test.
       sampleTopics = [
-        { id: '1', label: 'This is a thing.', creator: 'Bret' },
-        { id: '2', label: 'This is another thing.', creator: 'Alicia' },
-        { id: '3', label: 'This is a third thing.', creator: 'Frank' },
-        { id: '4', label: 'This is NOT a thing.', creator: 'Jim' },
-        { id: '5', label: 'This is an after thing.', creator: 'Jan' }
+        { id: '1', label: 'This is a thing.', creator: 'Bret', startTime: null },
+        { id: '2', label: 'This is another thing.', creator: 'Alicia', startTime: null },
+        { id: '3', label: 'This is a third thing.', creator: 'Frank', startTime: null },
+        { id: '4', label: 'This is NOT a thing.', creator: 'Jim', startTime: null },
+        { id: '5', label: 'This is an after thing.', creator: 'Jan', startTime: null }
       ];
 
       gapi.isEnabled = false;
@@ -34,11 +34,16 @@ describe('HangDown Controllers', function() {
       expect(scope.topics).toBeDefined();
     });
 
+    it('should have a timestamp of when the conversation started', function(){
+      expect(scope.conversationStart).toBeDefined();
+    });
+
     it('should initialize with the shared state if one already exists', function(){
       // Create a shared state.
       gapi.hangout.data.currentState = {
         topics: JSON.stringify(sampleTopics),
-        activeTopicId: '4'
+        activeTopicId: '4',
+        conversationStart: 0
       };
 
       // For a new controller to be created.
@@ -61,6 +66,29 @@ describe('HangDown Controllers', function() {
 
       expect(scope.topics.length).toEqual(1);
       expect(scope.newTopicBuffer).toEqual('');
+    });
+
+    it('should start the conversation when the first topic is created', function(){
+      var beforeTime = new Date().getTime();
+      scope.newTopicBuffer = "Demo topic";
+      scope.addNewTopic();
+      var afterTime = new Date().getTime();
+
+      expect(scope.conversationStart).not.toBeLessThan(beforeTime);
+      expect(scope.conversationStart).not.toBeGreaterThan(afterTime);
+      expect(scope.conversationStart).toEqual(scope.topics[scope.activeTopicIndex].startTime);
+    });
+
+    it('should not change the conversation start time after the first topic is created', function(){
+      scope.newTopicBuffer = "Demo topic";
+      scope.addNewTopic();
+
+      var firstTime = scope.conversationStart;
+
+      scope.newTopicBuffer = "Demo topic 2";
+      scope.addNewTopic();
+
+      expect(scope.conversationStart).toEqual(firstTime);
     });
 
     it('should not add empty topics', function(){
@@ -117,6 +145,26 @@ describe('HangDown Controllers', function() {
       expect(scope.activeTopicIndex).toEqual(0);
     });
 
+    it('should set the start time of the topic when navigating to it', function(){
+      scope.topics = sampleTopics;
+
+      var beforeTime = new Date().getTime();
+      scope.advanceTopic();
+      var afterTime = new Date().getTime();
+      expect(scope.topics[scope.activeTopicIndex].startTime).toBeDefined();
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeNull();
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeLessThan(beforeTime);
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeGreaterThan(afterTime);
+
+      beforeTime = new Date().getTime();
+      scope.regressTopic();
+      afterTime = new Date().getTime();
+      expect(scope.topics[scope.activeTopicIndex].startTime).toBeDefined();
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeNull();
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeLessThan(beforeTime);
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeGreaterThan(afterTime);
+    });
+
     //===========================================================================
     // GAPI UPDATES
     //===========================================================================
@@ -129,7 +177,7 @@ describe('HangDown Controllers', function() {
       // Attempt to push a "fake" change that originated with self.
       gapi.hangout.data.submitDelta({
         activeTopicIndex: '5',
-        modifier: currentUser.id
+        modifier: currentUser.id,
       });
 
       // Make sure that the internal model has not changed.
