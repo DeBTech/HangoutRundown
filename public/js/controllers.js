@@ -35,8 +35,9 @@ function HangDownListCntr($scope) {
 
       var topic = $scope.topics[topicIndex];
       // If the timer isn't already running, give it a go.
-      topic.endTime = topic.duration = null;
+      topic.endTime = null;
       if (topic.startTime == null) topic.startTime = new Date().getTime();
+      topic.duration = $scope.formatDuration(topic.startTime);
 
       // Set up the model.
       $scope.activeTopicIndex = topicIndex;
@@ -150,10 +151,9 @@ function HangDownListCntr($scope) {
       $scope.topics.push(createTopic(newTopics[i].trim()));
     };
 
-    // If there is no active topic yet, set the active topic.
-    if (_activeTopicId == null) {
-      _activeTopicId = $scope.topics[0].id;
-      $scope.activeTopicIndex = 0;
+    // If this is the first topic, go ahead an activate it.
+    if ($scope.topics.length == 1) {
+      $scope.model.activateTopicIndex(0);
 
       // Set the conversation and topic start times.
       $scope.conversationStart = $scope.topics[$scope.activeTopicIndex].startTime = new Date().getTime();
