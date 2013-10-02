@@ -42,8 +42,8 @@ describe('HangDown Controllers', function() {
       // Create a shared state.
       gapi.hangout.data.currentState = {
         topics: JSON.stringify(sampleTopics),
-        activeTopicId: '4',
-        conversationStart: 0
+        activeTopicIndex: '3',
+        conversationStart: '0'
       };
 
       // For a new controller to be created.
@@ -52,6 +52,23 @@ describe('HangDown Controllers', function() {
       // Make sure that the initial state is correct.
       expect(scope.topics.length).toEqual(sampleTopics.length);
       expect(scope.topics[scope.activeTopicIndex].id).toEqual('4');
+    });
+
+    //===========================================================================
+    // INTERNAL MODEL FUNCTIONS
+    //===========================================================================
+    it('should have an internal model', function(){
+      expect(scope.model).toBeDefined();
+    });
+
+    it('should be able to locate the index for a topic id', function(){
+      scope.topics = sampleTopics;
+      expect(scope.model.getTopicIndex('3')).toEqual(2);
+    });
+
+    it('should be able to should return null when locating topics that do not exist', function(){
+      scope.topics = sampleTopics;
+      expect(scope.model.getTopicIndex('bugs')).toBeNull();
     });
 
     //===========================================================================
@@ -204,7 +221,7 @@ describe('HangDown Controllers', function() {
 
       // Attempt to push a "fake" change that originated with self.
       gapi.hangout.data.submitDelta({
-        activeTopicId: JSON.stringify('5'),
+        activeTopicIndex: JSON.stringify(4),
         modifier: '99999'
       });
 
@@ -268,7 +285,7 @@ describe('HangDown Controllers', function() {
       scope.topics = sampleTopics;
 
       // Set up the current selection.
-      scope.goToTopic('3');
+      scope.model.activateTopicIndex(scope.model.getTopicIndex('3'));
 
       // Current topic should be '3'.
       expect(scope.topics[scope.activeTopicIndex].id).toEqual('3');
@@ -285,7 +302,7 @@ describe('HangDown Controllers', function() {
       scope.topics = sampleTopics;
 
       // Set up the current selection.
-      scope.goToTopic('3');
+      scope.model.activateTopicIndex(scope.model.getTopicIndex('3'));
 
       // Current topic should be '3'.
       expect(scope.topics[scope.activeTopicIndex].id).toEqual('3');
@@ -302,7 +319,7 @@ describe('HangDown Controllers', function() {
       scope.topics = sampleTopics;
 
       // Set up the current selection.
-      scope.goToTopic('5');
+      scope.model.activateTopicIndex(scope.model.getTopicIndex('5'));
 
       // Current topic should be '3'.
       expect(scope.topics[scope.activeTopicIndex].id).toEqual('5');
