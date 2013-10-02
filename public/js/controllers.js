@@ -10,17 +10,19 @@ function HangDownListCntr($scope) {
 
   $scope.topics = [];
 
-  var activeTopicId = null;
+  var _activeTopicId = null;
   $scope.activeTopicIndex = 0;
   $scope.currentUser = null;
 
   $scope.conversationStart = null;
 
+  var _timeCounterEvent = null;
+
   var resetActiveTopicIndex = function(){
     var activeIndex = 0;
 
     for (var i = $scope.topics.length - 1; i >= 0; i--) {
-      if ($scope.topics[i].id == activeTopicId) {
+      if ($scope.topics[i].id == _activeTopicId) {
         activeIndex = i;
         break;
       }
@@ -34,6 +36,8 @@ function HangDownListCntr($scope) {
       // First, make sure that the active index is correct.
       resetActiveTopicIndex();
 
+      // TODO: Clear out all startTimes for any topic past the current one.
+
       // Push state.
       pushSharedState();
     }
@@ -41,17 +45,20 @@ function HangDownListCntr($scope) {
 
   $scope.goToTopic = function(topicId){
     // TODO: If we keep this function around, make sure to check for non-existent IDs.
-    activeTopicId = topicId;
+    _activeTopicId = topicId;
     resetActiveTopicIndex();
   };
 
-  $scope.formatDuration = function(fromTime){
-    var timeDiff = new Date().getTime() - fromTime;
+  $scope.formatDuration = function(fromTime, toTime){
+    console.log(fromTime, toTime);
+    if (toTime == undefined) toTime = new Date().getTime();
+    var timeDiff = toTime - fromTime;
 
-    var hours = parseInt(timeDiff / (60*60));
-    var hourRem = timeDiff % (60*60);
-    var minutes = parseInt(hourRem / (60));
-    var seconds = hourRem % (60);
+    var hours = parseInt(timeDiff / (60*60*1000));
+    var hourRem = timeDiff % (60*60*1000);
+    var minutes = parseInt(hourRem / (60*1000));
+    var minuteRem = hourRem % (60*1000);
+    var seconds = parseInt(minuteRem / (1000));
 
     var result = hours.toString() + ":";
     if (minutes < 10) result += "0";
@@ -65,7 +72,14 @@ function HangDownListCntr($scope) {
   $scope.regressTopic = _apiRequiredFunction(function(){
     // Only regress if the topic is not already the first.
     if ($scope.activeTopicIndex > 0) {
-      activeTopicId = $scope.topics[--$scope.activeTopicIndex].id;
+      // Null the current topic's start time, end time, and duration.
+      $scope.topics[$scope.activeTopicIndex].startTime
+        = $scope.topics[$scope.activeTopicIndex].endTime
+        = $scope.topics[$scope.activeTopicIndex].duration
+        = null;
+
+      // Regress the topic.
+      _activeTopicId = $scope.topics[--$scope.activeTopicIndex].id;
       $scope.topics[$scope.activeTopicIndex].startTime = new Date().getTime();
 
       // Submit changes to Google.
@@ -76,7 +90,16 @@ function HangDownListCntr($scope) {
   $scope.advanceTopic = _apiRequiredFunction(function(){
     // Only advance if the topic is not already the last.
     if ($scope.activeTopicIndex < $scope.topics.length - 1) {
-      activeTopicId = $scope.topics[++$scope.activeTopicIndex].id;
+      // Close out the previous topic's end time and duration.
+      $scope.topics[$scope.activeTopicIndex].endTime = new Date().getTime();
+      $scope.topics[$scope.activeTopicIndex].duration =
+        $scope.formatDuration(
+          $scope.topics[$scope.activeTopicIndex].startTime,
+          $scope.topics[$scope.activeTopicIndex].endTime
+        );
+
+      // Advance the topic.
+      _activeTopicId = $scope.topics[++$scope.activeTopicIndex].id;
       $scope.topics[$scope.activeTopicIndex].startTime = new Date().getTime();
 
       // Submit changes to Google.
@@ -90,7 +113,9 @@ function HangDownListCntr($scope) {
       id: new Date().getTime() + '-' + $scope.currentUser.id + '-' + _topicIndex++,
       label: newLabel,
       creator: $scope.currentUser.person.displayName,
-      startTime: null
+      startTime: null,
+      endTime: null,
+      duration: null
     };
   };
 
@@ -109,12 +134,24 @@ function HangDownListCntr($scope) {
     };
 
     // If there is no active topic yet, set the active topic.
-    if (activeTopicId == null) {
-      activeTopicId = $scope.topics[0].id;
+    if (_activeTopicId == null) {
+      _activeTopicId = $scope.topics[0].id;
       $scope.activeTopicIndex = 0;
 
       // Set the conversation and topic start times.
       $scope.conversationStart = $scope.topics[$scope.activeTopicIndex].startTime = new Date().getTime();
+    }
+
+    // If there is no time counting event running, create one.
+    if (_timeCounterEvent == null) {
+      _timeCounterEvent = setInterval(function(){
+        // Update the current topic duration.
+        $scope.topics[$scope.activeTopicIndex].duration =
+          $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
+
+        // Apply the changes.
+        $scope.$apply();
+      }, 1000);
     }
 
     // Submit changes to Google.
@@ -124,11 +161,11 @@ function HangDownListCntr($scope) {
   $scope.deleteTopic = _apiRequiredFunction(function(deleteTopicId){
     // If we're about to delete the current topic,
     // determine the next topic to select.
-    if (deleteTopicId == activeTopicId) {
+    if (deleteTopicId == _activeTopicId) {
       // If the next topic exists, use it.
-      if ($scope.topics[$scope.activeTopicIndex+1]) activeTopicId = $scope.topics[$scope.activeTopicIndex+1].id;
-      else if ($scope.topics[$scope.activeTopicIndex-1]) activeTopicId = $scope.topics[$scope.activeTopicIndex-1].id;
-      else activeTopicId = null;
+      if ($scope.topics[$scope.activeTopicIndex+1]) _activeTopicId = $scope.topics[$scope.activeTopicIndex+1].id;
+      else if ($scope.topics[$scope.activeTopicIndex-1]) _activeTopicId = $scope.topics[$scope.activeTopicIndex-1].id;
+      else _activeTopicId = null;
     }
 
     // Filter the array.
@@ -141,6 +178,14 @@ function HangDownListCntr($scope) {
     // Reset the active index.
     resetActiveTopicIndex();
 
+    // If the topic list is empty, stop the counter and end the conversation.
+    if (!$scope.topics.length) {
+      if (_timeCounterEvent != null)
+        clearInterval(_timeCounterEvent);
+      _timeCounterEvent = null;
+      $scope.conversationStart = null;
+    }
+
     // Push state.
     pushSharedState();
   });
@@ -148,7 +193,7 @@ function HangDownListCntr($scope) {
   var initGapiModel = function(){
     // Create expected values in the shared model.
     gapi.hangout.data.submitDelta({
-      activeTopicId: JSON.stringify(null),
+      _activeTopicId: JSON.stringify(null),
       topics: JSON.stringify([]),
       conversationStart: JSON.stringify(null)
     });
@@ -158,7 +203,7 @@ function HangDownListCntr($scope) {
     // If there was no state provided, just push the whole system.
     if (!stateDelta) {
       stateDelta = {
-        activeTopicId: JSON.stringify(activeTopicId),
+        _activeTopicId: JSON.stringify(_activeTopicId),
         topics: JSON.stringify($scope.topics),
         conversationStart: JSON.stringify($scope.conversationStart)
       };
@@ -181,7 +226,7 @@ function HangDownListCntr($scope) {
 
   var applySharedState = function(newState){
     // Update the internal model.
-    activeTopicId = JSON.parse(newState.activeTopicId);
+    _activeTopicId = JSON.parse(newState._activeTopicId);
     $scope.topics = JSON.parse(newState.topics);
     if (newState.conversationStart)
       $scope.conversationStart = JSON.parse(newState.conversationStart);
@@ -197,7 +242,7 @@ function HangDownListCntr($scope) {
     var initialState = gapi.hangout.data.getState();
 
     // If the state has not been initialized, do that now.
-    if (initialState.activeTopicId == undefined) initGapiModel();
+    if (initialState._activeTopicId == undefined) initGapiModel();
     // Otherwise, update internal state with shared state.
     else applySharedState(initialState);
 

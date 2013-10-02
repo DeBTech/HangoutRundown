@@ -165,6 +165,18 @@ describe('HangDown Controllers', function() {
       expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeGreaterThan(afterTime);
     });
 
+    it('should clear the start time from topics that have been regressed from', function(){
+      scope.topics = sampleTopics;
+
+      scope.advanceTopic();
+      expect(scope.topics[scope.activeTopicIndex].startTime).toBeDefined();
+      expect(scope.topics[scope.activeTopicIndex].startTime).not.toBeNull();
+      var targetIndex = scope.activeTopicIndex;
+
+      scope.regressTopic();
+      expect(scope.topics[targetIndex].startTime).toBeNull();
+    });
+
     //===========================================================================
     // GAPI UPDATES
     //===========================================================================
@@ -322,7 +334,7 @@ describe('HangDown Controllers', function() {
       // First, create a known timestamp.
       var currentTime = new Date().getTime();
       // Subtract a predicatable number of seconds. 1 hr, 13 min, 30 sec
-      var pastTime = currentTime - (1*60*60 + 13*60 + 30);
+      var pastTime = currentTime - (1*60*60*1000 + 13*60*1000 + 30*1000);
 
       var formattedDuration = scope.formatDuration(pastTime);
 
