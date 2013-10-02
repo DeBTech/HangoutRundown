@@ -1,6 +1,10 @@
 {
   "name": "hangdown",
-  "version": "0.0.1",
+  "version": "0.3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DeBTech/HangoutRundown.git"
+  },
   "private": true,
   "scripts": {
     "start": "node app.js"

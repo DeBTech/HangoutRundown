@@ -17,9 +17,12 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   
   ul#HangDownTopics(ui-sortable='topicSortConfig', ng-model='topics')
     li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
-      p.title {{topic.label}}
-      p.creator {{topic.creator}}
-      button(ng-click="deleteTopic('{{topic.id}}')").delete-topic Delete
+      .main
+        p.title {{topic.label}}
+        p.creator {{topic.creator}}
+        button(ng-click="deleteTopic('{{topic.id}}')").delete-topic Delete
+      .time
+        span(ng-if="topic.duration != null") {{topic.duration}}
 
   footer#HangDownControls
     #HangDownButtons
@@ -28,3 +31,5 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
     form(ng-submit="addNewTopic(newTopicBuffer); newTopicBuffer='';")
       input(ng-model="newTopicBuffer", placeholder="New Topic...")
       button(type="submit") Add
+    #HangDownConversationTimer(ng-if="conversationStart != null")
+      {{formatDuration(conversationStart)}}
