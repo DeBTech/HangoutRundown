@@ -34,12 +34,15 @@ function HangDownListCntr($scope) {
       if (topicIndex >= $scope.topics.length || topicIndex < 0) return;
 
       // If this index is already set, do nothing.
-      if (topicIndex = $scope.activeTopicIndex && $scope.topics[topicIndex].id == _activeTopicId) return;
+      if (topicIndex == $scope.activeTopicIndex && $scope.topics[topicIndex].id == _activeTopicId) return;
 
       var topic = $scope.topics[topicIndex];
       // If the timer isn't already running, give it a go.
       if (topic.startTime == null) topic.startTime = new Date().getTime();
       topic.duration = $scope.formatDuration(topic.startTime);
+
+      // TODO: This is still breaking when deleting the current topic.
+      // Causes next topic to have a forever-long duration.
 
       // Set up the model.
       $scope.activeTopicIndex = topicIndex;
