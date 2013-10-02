@@ -31,11 +31,13 @@ function HangDownListCntr($scope) {
     },
     activateTopicIndex: function(topicIndex){
       // If this index doesn't exist, do nothing.
-      if (topicIndex < 0 || topicIndex >= $scope.topics.length) return;
+      if (topicIndex >= $scope.topics.length || topicIndex < 0) return;
+
+      // If this index is already set, do nothing.
+      if (topicIndex = $scope.activeTopicIndex && $scope.topics[topicIndex].id == _activeTopicId) return;
 
       var topic = $scope.topics[topicIndex];
       // If the timer isn't already running, give it a go.
-      topic.endTime = null;
       if (topic.startTime == null) topic.startTime = new Date().getTime();
       topic.duration = $scope.formatDuration(topic.startTime);
 
@@ -93,7 +95,6 @@ function HangDownListCntr($scope) {
     if ($scope.activeTopicIndex > 0) {
       // Null the current topic's start time, end time, and duration.
       $scope.topics[$scope.activeTopicIndex].startTime
-        = $scope.topics[$scope.activeTopicIndex].endTime
         = $scope.topics[$scope.activeTopicIndex].duration
         = null;
 
@@ -109,12 +110,9 @@ function HangDownListCntr($scope) {
     // Only advance if the topic is not already the last.
     if ($scope.activeTopicIndex < $scope.topics.length - 1) {
       // Close out the previous topic's end time and duration.
-      $scope.topics[$scope.activeTopicIndex].endTime = new Date().getTime();
       $scope.topics[$scope.activeTopicIndex].duration =
-        $scope.formatDuration(
-          $scope.topics[$scope.activeTopicIndex].startTime,
-          $scope.topics[$scope.activeTopicIndex].endTime
-        );
+        $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
+      $scope.topics[$scope.activeTopicIndex].startTime = null;
 
       // Advance the topic.
       $scope.model.activateTopicIndex($scope.activeTopicIndex+1);
@@ -131,7 +129,6 @@ function HangDownListCntr($scope) {
       label: newLabel,
       creator: $scope.currentUser.person.displayName,
       startTime: null,
-      endTime: null,
       duration: null
     };
   };
@@ -152,7 +149,7 @@ function HangDownListCntr($scope) {
     };
 
     // If this is the first topic, go ahead an activate it.
-    if ($scope.topics.length == 1) {
+    if (_activeTopicId == null) {
       $scope.model.activateTopicIndex(0);
 
       // Set the conversation and topic start times.

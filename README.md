@@ -6,7 +6,6 @@ You know, a rundown. For Hangouts. What part didn't you get?
 
 TODO
 ====
-- Keep a clock for whole conversation and current topic.
 - Enable pausing?
 - Potentially change the room topic when changing to a new rundown topic?
 - Enable conversation moderator (admin).
