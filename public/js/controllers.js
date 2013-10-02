@@ -41,9 +41,6 @@ function HangDownListCntr($scope) {
       if (topic.startTime == null) topic.startTime = new Date().getTime();
       topic.duration = $scope.formatDuration(topic.startTime);
 
-      // TODO: This is still breaking when deleting the current topic.
-      // Causes next topic to have a forever-long duration.
-
       // Set up the model.
       $scope.activeTopicIndex = topicIndex;
       _activeTopicId = topic.id;
@@ -189,6 +186,9 @@ function HangDownListCntr($scope) {
 
       // Otherwise, our topics list is about to be empty.
       // Other plans will have to be made.
+      
+      // Purge the current index.
+      $scope.activeTopicIndex = -1;
     }
 
     // Filter the array.
