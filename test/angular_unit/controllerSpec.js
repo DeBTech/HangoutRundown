@@ -229,6 +229,10 @@ describe('HangDown Controllers', function() {
       expect(scope.activeTopicIndex).toEqual(4);
     });
 
+    it('should not attempt to apply incorrectly initialized states', function(){
+      expect(false).toBe(true);
+    });
+
     //===========================================================================
     // REORDERING TOPICS
     //===========================================================================

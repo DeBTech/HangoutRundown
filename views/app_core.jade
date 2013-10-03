@@ -16,7 +16,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
       span.highlight Point
   
   ul#HangDownTopics(ui-sortable='topicSortConfig', ng-model='topics')
-    li(ng-repeat="topic in topics track by $index", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
+    li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
       .main
         p.title {{topic.label}}
         p.creator {{topic.creator}}

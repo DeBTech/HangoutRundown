@@ -260,15 +260,19 @@ function HangDownListCntr($scope) {
 
   var applySharedState = function(newState){
     // Update the internal model.
-    $scope.topics = JSON.parse(newState.topics);
+    if (newState.topics) {
+      var newTopics = JSON.parse(newState.topics);
+      // If any "$$hashKey" elements are found, strip them out.
+      for (var i = newTopics.length - 1; i >= 0; i--) {
+        delete newTopics[i]['$$hashKey'];
+      };
+      $scope.topics = newTopics;
+    }
     if (newState.conversationStart)
       $scope.conversationStart = JSON.parse(newState.conversationStart);
 
     // Make sure that the activeTopicIndex is updated.
     $scope.model.activateTopicIndex(JSON.parse(newState.activeTopicIndex));
-
-    // TODO: There's currently a bug in this apply().
-    // In a live hangout, it throws an error when grabbing the current state.
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
