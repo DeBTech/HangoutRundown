@@ -133,6 +133,19 @@ function HangDownListCntr($scope) {
     };
   };
 
+  var startTimerEvent = function(){
+    if (_timeCounterEvent == null) {
+      _timeCounterEvent = setInterval(function(){
+        // Update the current topic duration.
+        $scope.topics[$scope.activeTopicIndex].duration =
+          $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
+
+        // Apply the changes.
+        $scope.$apply();
+      }, 1000);
+    }
+  }
+
   // TODO: Get rid of the requirements on the buffer here.
   $scope.newTopicBuffer = '';
   $scope.addNewTopic = _apiRequiredFunction(function(){
@@ -157,16 +170,7 @@ function HangDownListCntr($scope) {
     }
 
     // If there is no time counting event running, create one.
-    if (_timeCounterEvent == null) {
-      _timeCounterEvent = setInterval(function(){
-        // Update the current topic duration.
-        $scope.topics[$scope.activeTopicIndex].duration =
-          $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
-
-        // Apply the changes.
-        $scope.$apply();
-      }, 1000);
-    }
+    startTimerEvent();
 
     // Submit changes to Google.
     pushSharedState();
@@ -277,8 +281,10 @@ function HangDownListCntr($scope) {
     if (initialState.activeTopicIndex == undefined) initGapiModel();
     // Otherwise, update internal state with shared state.
     else {
-      console.log($scope.topics, initialState);
       applySharedState(initialState);
+      
+      // If there was a conversation start time, restart the timer event.
+      if ($scope.conversationStart != null) startTimerEvent();
     }
 
     // Set up internal model to work with gapi.
