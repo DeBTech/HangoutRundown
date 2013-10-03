@@ -263,6 +263,9 @@ function HangDownListCntr($scope) {
     // Make sure that the activeTopicIndex is updated.
     $scope.model.activateTopicIndex(JSON.parse(newState.activeTopicIndex));
 
+    // TODO: There's currently a bug in this apply().
+    // In a live hangout, it throws an error when grabbing the current state.
+
     $scope.$apply();  // Have to do this to force the view to update.
   };
 
@@ -273,7 +276,10 @@ function HangDownListCntr($scope) {
     // If the state has not been initialized, do that now.
     if (initialState.activeTopicIndex == undefined) initGapiModel();
     // Otherwise, update internal state with shared state.
-    else applySharedState(initialState);
+    else {
+      console.log($scope.topics, initialState);
+      applySharedState(initialState);
+    }
 
     // Set up internal model to work with gapi.
     $scope.apiLive = true;
