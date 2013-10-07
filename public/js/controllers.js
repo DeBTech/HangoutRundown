@@ -31,8 +31,8 @@ function HangDownListCntr($scope) {
         creator += ' ' + creatorNameComponents[1][0];
 
       // Create a sufficiently random ID.
-      var id = creatorNameComponents[0];
-      id += new Date().getTime();
+      var id = creatorNameComponents[0] + '-';
+      id += new Date().getTime() + '-';
       id += _topicCounter++;
 
       return {
@@ -40,6 +40,31 @@ function HangDownListCntr($scope) {
         contents: topicName,
         creator: creator,
         duration: 0
+      };
+    };
+
+    // AddTopic()
+    model.addTopic = function(topic, creator){
+      // First, bail if there is no topic to add.
+      if (topic == undefined || !topic.length) return;
+
+      // Next, split the topic if need-be.
+      // ';;' and '\n' should delineate topics.
+      var topics = topic.split(/[\n(;;)]/);
+
+
+      // Process through all topics.
+      for (var i = 0; i < topics.length; i++) {
+        var newTopic = topics[i].trim();
+        // If there's nothing left of it after trimming, move on.
+        if (!newTopic.length) continue;
+
+        // If there is no current topic, set it.
+        if ($scope.currentTopic == null)
+          $scope.currentTopic = model.createTopic(newTopic, creator);
+        // Otherwise, add it to the future topics.
+        else
+          $scope.futureTopics.push(model.createTopic(newTopic, creator));
       };
     };
 
@@ -54,6 +79,15 @@ function HangDownListCntr($scope) {
         $scope.currentTopic = ($scope.futureTopics.length) ? 
           $scope.currentTopic = $scope.futureTopics.shift() :
           null;
+    };
+
+    // AdvanceTopics()
+    model.advanceTopics = function(){
+      // Only advance if there are more topics to advance to.
+      if ($scope.futureTopics.length) {
+        $scope.pastTopics.push($scope.currentTopic);
+        $scope.currentTopic = $scope.futureTopics.shift()
+      }
     };
 
     model.findTopicInList = function(topicId, topicList){

@@ -39,30 +39,73 @@ describe('HangDownListController', function(){
   //===========================================================================
   // UI METHODS
   //===========================================================================
-  xdescribe('ui methods', function(){
-    xit('should be able to advance topics', function(){ expect(true).toBe(false); });
-    xit('should not advance topics if there are no future topics', function(){ expect(true).toBe(false); });
+  describe('ui methods', function(){
+    it('should be able to advance topics', function(){
+      expect(scope.model.advanceTopics).toBeDefined();
+
+      var currentTopic = scope.model.createTopic('New Topic', 'Test User');
+      var nextTopic = scope.model.createTopic('Another New Topic', 'Test User');
+
+      scope.currentTopic = currentTopic;
+      scope.futureTopics.push(nextTopic);
+      scope.model.advanceTopics();
+
+      expect(scope.pastTopics.length).toEqual(1);
+      expect(scope.currentTopic.id).toEqual(nextTopic.id);
+      expect(scope.futureTopics.length).toEqual(0);
+    });
+
+    it('should not advance topics if there are no future topics', function(){
+      var currentTopic = scope.model.createTopic('New Topic', 'Test User');
+
+      scope.currentTopic = currentTopic;
+      scope.model.advanceTopics();
+
+      expect(scope.pastTopics.length).toEqual(0);
+      expect(scope.currentTopic.id).toEqual(currentTopic.id);
+    });
 
     it('should be able to add new topics', function(){
+      expect(scope.model.addTopic).toBeDefined();
+
       var topicToAdd = 'New Topic';
-      scope.addTopic(topicToAdd);
+      scope.model.addTopic(topicToAdd, 'Test User');
+      expect(scope.currentTopic).not.toBeNull();
       expect(scope.currentTopic.contents).toEqual(topicToAdd);
     });
+
+    it('should trim topics before adding them', function(){
+      scope.model.addTopic('   New Topic ', 'Test User');
+      expect(scope.currentTopic.contents).toEqual('New Topic');
+    });
+
     it('should add additional topics to the future topics list', function(){
       var firstTopicToAdd = 'New Topic';
       var secondTopicToAdd = 'Another Topic';
 
-      scope.addTopic(firstTopicToAdd);
-      scope.addTopic(secondTopicToAdd);
+      scope.model.addTopic(firstTopicToAdd, 'Test User');
+      scope.model.addTopic(secondTopicToAdd, 'Test User');
 
       expect(scope.currentTopic.contents).toEqual(firstTopicToAdd);
       expect(scope.futureTopics.length).toEqual(1);
-      expect(scope.futureTopics[0].id).toEqual(secondTopicToAdd);
+      expect(scope.futureTopics[0].contents).toEqual(secondTopicToAdd);
     });
-    it('should not try to add empty topics', function(){
 
+    it('should not try to add empty topics', function(){
+      scope.model.addTopic('', 'Test User');
+      expect(scope.currentTopic).toBeNull();
     });
-    xit('should be able to add multiple topics at once, divided by ";;" or "<newline>"', function(){ expect(true).toBe(false); });
+
+    it('should be able to add multiple topics at once, divided by ";;" or "<newline>"', function(){
+      var multiTopic = "This is ;; my multi;; topic \n string;;that is \n here.";
+      scope.model.addTopic(multiTopic, 'Test User');
+      expect(scope.currentTopic.contents).toEqual('This is');
+      expect(scope.futureTopics[0].contents).toEqual('my multi');
+      expect(scope.futureTopics[1].contents).toEqual('topic');
+      expect(scope.futureTopics[2].contents).toEqual('string');
+      expect(scope.futureTopics[3].contents).toEqual('that is');
+      expect(scope.futureTopics[4].contents).toEqual('here.');
+    });
   });
 
   //===========================================================================
@@ -170,7 +213,7 @@ describe('HangDownListController', function(){
   // MISC
   //===========================================================================
   xdescribe('randomly', function(){
-    it('should be able to format timestamp differences in a conversation-readable way', function(){
+    xit('should be able to format durations in a conversation-readable way', function(){
       expect(scope.formatDuration).toBeDefined();
       var duration = 1*60*60 + 13*60 + 30;
       var formattedDuration = scope.formatDuration(duration);
