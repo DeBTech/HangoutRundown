@@ -4,6 +4,15 @@ HangoutRundown
 You know, a rundown. For Hangouts. What part didn't you get?
 
 
+Things I Learned While Writing This
+===================================
+
+- AngularJS
+- Google Hangouts API
+- Jasmine
+- Angular in NodeJS/ExpressJS
+- Dev/Staging/Production Flow with Heroku
+
 TODO
 ====
 - Get some actual graphics.

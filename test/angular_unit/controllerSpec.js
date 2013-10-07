@@ -34,8 +34,6 @@ describe('HangDownListController', function(){
 
       expect(scope.model).toBeDefined();
     });
-
-    xit('should initialize with the shared state if one already exists', function(){ expect(true).toBe(false); });
   });
 
   //===========================================================================
@@ -70,7 +68,7 @@ describe('HangDownListController', function(){
   //===========================================================================
   // TOPICS
   //===========================================================================
-  xdescribe('topic model', function(){
+  describe('topic model', function(){
     it('should correctly create new topics', function(){
       expect(scope.model.createTopic).toBeDefined();
 
@@ -79,8 +77,7 @@ describe('HangDownListController', function(){
       expect(newTopic.id).toBeDefined();
       expect(newTopic.creator).toEqual('Temp U');
       expect(newTopic.contents).toEqual('New Topic');
-      expect(newTopic.duration).toBeDefined();
-      expect(newTopic.duration).toBeNull();
+      expect(newTopic.duration).toEqual(0);
     });
 
     it('should create topics with unique ids', function(){
@@ -89,15 +86,71 @@ describe('HangDownListController', function(){
       expect(newTopic.id).not.toEqual(newTopic2.id);
     });
 
-    xit('should be able to find topics by id in a topic list', function(){ expect(true).toBe(false); });
-    xit('should be able to delete future topics', function(){ expect(true).toBe(false); });
-    xit('should be able to delete the current topic', function(){ expect(true).toBe(false); });
-    xit('should not be able to delete past topics', function(){ expect(true).toBe(false); });
+    it('should be able to find topics by id in a topic list', function(){
+      expect(scope.model.findTopicInList).toBeDefined();
+
+      var topicList = [];
+      topicList.push(scope.model.createTopic('New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('Another New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('A Third New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('A Final New Topic', 'Test User'));
+
+      var searchIndex = 2;
+      expect(scope.model.findTopicInList(topicList[searchIndex].id, topicList)).toEqual(searchIndex);
+    });
+
+    it('should not be able to find non-existant topics in a topic list', function(){
+      var topicList = [];
+      topicList.push(scope.model.createTopic('New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('Another New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('A Third New Topic', 'Test User'));
+      topicList.push(scope.model.createTopic('A Final New Topic', 'Test User'));
+
+      expect(scope.model.findTopicInList('NonId', topicList)).toEqual(-1);
+    });
+
+    it('should be able to delete the current topic', function(){
+      expect(scope.model.deleteTopic).toBeDefined();
+
+      scope.currentTopic = scope.model.createTopic('New Topic', 'Test User');
+      scope.model.deleteTopic(scope.currentTopic.id);
+      expect(scope.currentTopic).toBeNull();
+    });
+
+    it('should replace the current topic with the next future topic if deleted', function(){
+      scope.currentTopic = scope.model.createTopic('New Topic', 'Test User');
+      scope.futureTopics.push(scope.model.createTopic('Another New Topic', 'Test User'));
+
+      scope.model.deleteTopic(scope.currentTopic.id);
+
+      expect(scope.currentTopic).not.toBeNull();
+      expect(scope.currentTopic.contents).toEqual('Another New Topic');
+      expect(scope.futureTopics.length).toEqual(0);
+    });
+
+    it('should be able to delete future topics', function(){
+      scope.currentTopic = scope.model.createTopic('New Topic', 'Test User');
+      scope.futureTopics.push(scope.model.createTopic('Another New Topic', 'Test User'));
+      
+      scope.model.deleteTopic(scope.futureTopics[0].id);
+
+      expect(scope.currentTopic).not.toBeNull();
+      expect(scope.futureTopics.length).toEqual(0);
+    });
+
+    it('should not be able to delete past topics', function(){
+      scope.pastTopics.push(scope.model.createTopic('Another New Topic', 'Test User'));
+      
+      scope.model.deleteTopic(scope.pastTopics[0].id);
+
+      expect(scope.pastTopics.length).toEqual(1);
+    });
   });
 
   //===========================================================================
   // CONVERSATION
   //===========================================================================
+  // Use jasmine.Clock.useMock();
   xit('should start the conversation when the first topic is created', function(){ expect(true).toBe(false); });
 
   xit('should not change the conversation start time after the first topic is created', function(){ expect(true).toBe(false); });
@@ -108,6 +161,7 @@ describe('HangDownListController', function(){
   // GAPI
   //===========================================================================
   xit('should initialize the gapi correctly if it has\'t been already', function(){ expect(true).toBe(false); });
+  xit('should initialize with the shared state if one already exists', function(){ expect(true).toBe(false); });
 
   xit('should not apply gapi updates if self-originated', function(){ expect(true).toBe(false); });
   xit('should apply gapi updates that are not self-originated', function(){ expect(true).toBe(false); });

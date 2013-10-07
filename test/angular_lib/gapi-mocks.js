@@ -20,7 +20,8 @@ var gapi = function(gapi){
       add: function(callback){
         // Let's just go ahead and call it.
         // No sense wasting time.
-        callback({ isApiReady: true });
+        if (gapi.isEnabled)
+          callback({ isApiReady: true });
       }
     };
 

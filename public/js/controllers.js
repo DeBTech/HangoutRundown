@@ -3,31 +3,71 @@
 /* Controllers */
 
 function HangDownListCntr($scope) {
-  var _apiLive = false;
-  var _apiRequiredFunction = function(innerFunction){ return function(){
-    if (_apiLive) innerFunction.apply(this, arguments);
-  }; };
-
-  $scope.topics = [];
-  
   $scope.currentUser = null;
 
-  $scope.conversationStart = null;
+  $scope.pastTopics = [];
+  $scope.currentTopic = null;
+  $scope.futureTopics = [];
 
-  var _timeCounterEvent = null;
+  $scope.conversationDuration = null;
 
-  $scope.model = {
-    getTopicIndex: function(topicId){
-      var result = null;
-      for (var i = $scope.topics.length - 1; i >= 0; i--) {
-        if ($scope.topics[i].id == topicId) {
+  // Function factory to create wrapped GAPI functions that will only operate if
+  // the GAPI has been activated and update the GAPI after each call.
+  var _gapiLive = false;
+  var _gapiUpdatingFunction = function(innerFunction){ return function(){
+    if (!_gapiLive) return;
+    innerFunction.apply(this, arguments);
+    _pushSharedState();
+  }; };
+
+  $scope.model = (function(model){
+    // CreateTopic()
+    var _topicCounter = 0;
+    model.createTopic = function(topicName, creatorName){
+      // Figure out the creator's name.
+      var creatorNameComponents = creatorName.split(' ');
+      var creator = creatorNameComponents[0];
+      if (creatorNameComponents[1] != undefined)
+        creator += ' ' + creatorNameComponents[1][0];
+
+      // Create a sufficiently random ID.
+      var id = creatorNameComponents[0];
+      id += new Date().getTime();
+      id += _topicCounter++;
+
+      return {
+        id: id,
+        contents: topicName,
+        creator: creator,
+        duration: 0
+      };
+    };
+
+    // DeleteTopic()
+    model.deleteTopic = function(topicId){
+      // Filter the future topics.
+      $scope.futureTopics = $scope.futureTopics.filter(function(topic){ return topic.id != topicId; });
+
+      // Check to see if the current topic should be deleted.
+      if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
+        // If it should, either replace it with the first future topic, or null.
+        $scope.currentTopic = ($scope.futureTopics.length) ? 
+          $scope.currentTopic = $scope.futureTopics.shift() :
+          null;
+    };
+
+    model.findTopicInList = function(topicId, topicList){
+      var result = -1;
+      for (var i = topicList.length - 1; i >= 0; i--) {
+        if (topicList[i].id == topicId) {
           result = i;
           break;
         }
       };
       return result;
-    },
-    activateTopicIndex: function(topicIndex){
+    };
+
+    model.activateTopicIndex = function(topicIndex){
       // If this index doesn't exist, do nothing.
       if (topicIndex >= $scope.topics.length || topicIndex < 0) return;
 
@@ -42,17 +82,20 @@ function HangDownListCntr($scope) {
       // Set up the model.
       $scope.activeTopicIndex = topicIndex;
       _activeTopicId = topic.id;
-    },
+    };
 
     // TODO:
     // Move the rest of the model logic in here.
     // Make sure that only the model is updated on any of these calls.
-    // Change _apiRequiredFunction() to _apiUpdatingFunction() and have
-    //  it test for GAPI *and* call pushSharedState() at the end.
+    // Change _gapiUpdatingFunction() to _apiUpdatingFunction() and have
+    //  it test for GAPI *and* call _pushSharedState() at the end.
     // Use _apiUpdatingFunction() to create the publicly-visible scope functions
     //  by wrapping the internal model functions.
     // This will leave the model testable independently of any API nonsense.
-  };
+
+    // Make sure to return the closure.
+    return model;
+  })({});
 
   $scope.topicSortConfig = {
     stop: function(e, ui){
@@ -65,7 +108,7 @@ function HangDownListCntr($scope) {
       // TODO: Clear out all startTimes for any topic past the current one.
 
       // Push state.
-      pushSharedState();
+      _pushSharedState();
     }
   };
 
@@ -88,7 +131,7 @@ function HangDownListCntr($scope) {
     return result;
   };
 
-  $scope.regressTopic = _apiRequiredFunction(function(){
+  $scope.regressTopic = _gapiUpdatingFunction(function(){
     // Only regress if the topic is not already the first.
     if ($scope.activeTopicIndex > 0) {
       // Null the current topic's start time, end time, and duration.
@@ -100,11 +143,11 @@ function HangDownListCntr($scope) {
       $scope.model.activateTopicIndex($scope.activeTopicIndex-1);
 
       // Submit changes to Google.
-      pushSharedState();
+      _pushSharedState();
     }
   });
 
-  $scope.advanceTopic = _apiRequiredFunction(function(){
+  $scope.advanceTopic = _gapiUpdatingFunction(function(){
     // Only advance if the topic is not already the last.
     if ($scope.activeTopicIndex < $scope.topics.length - 1) {
       // Close out the previous topic's end time and duration.
@@ -116,7 +159,7 @@ function HangDownListCntr($scope) {
       $scope.model.activateTopicIndex($scope.activeTopicIndex+1);
 
       // Submit changes to Google.
-      pushSharedState();
+      _pushSharedState();
     }
   });
 
@@ -133,7 +176,7 @@ function HangDownListCntr($scope) {
 
   // TODO: Get rid of the requirements on the buffer here.
   $scope.newTopicBuffer = '';
-  $scope.addNewTopic = _apiRequiredFunction(function(){
+  $scope.addNewTopic = _gapiUpdatingFunction(function(){
     // If there is no topic set, bail.
     if (!$scope.newTopicBuffer.length) return;
 
@@ -167,10 +210,10 @@ function HangDownListCntr($scope) {
     }
 
     // Submit changes to Google.
-    pushSharedState();
+    _pushSharedState();
   });
 
-  $scope.deleteTopic = _apiRequiredFunction(function(deleteTopicId){
+  $scope.deleteTopic = _gapiUpdatingFunction(function(deleteTopicId){
     // If we're about to delete the current topic,
     // determine the next topic to select.
     if (deleteTopicId == _activeTopicId) {
@@ -215,7 +258,7 @@ function HangDownListCntr($scope) {
     }
 
     // Push state.
-    pushSharedState();
+    _pushSharedState();
   });
 
   var initGapiModel = function(){
@@ -227,7 +270,7 @@ function HangDownListCntr($scope) {
     });
   };
 
-  var pushSharedState = function(stateDelta){
+  var _pushSharedState = function(stateDelta){
     // If there was no state provided, just push the whole system.
     if (!stateDelta) {
       stateDelta = {
@@ -274,7 +317,7 @@ function HangDownListCntr($scope) {
     else applySharedState(initialState);
 
     // Set up internal model to work with gapi.
-    _apiLive = true;
+    _gapiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
 
     // Install the event handler for a change in model state.
