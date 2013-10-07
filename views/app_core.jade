@@ -26,8 +26,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
 
   footer#HangDownControls
     #HangDownButtons
-      button(ng-click="regressTopic()") Regress
-      button(ng-click="advanceTopic()") Advance
+      button(ng-click="advanceTopics()") Advance
     form#HangDownAddTopic(ng-submit="addNewTopic(newTopicBuffer); newTopicBuffer='';")
       input(ng-model="newTopicBuffer", placeholder="New Topic...")
       button(type="submit") Add

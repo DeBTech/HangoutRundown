@@ -133,14 +133,6 @@ function HangDownListCntr($scope) {
 
   $scope.topicSortConfig = {
     stop: function(e, ui){
-      // Determing the new index for the current topic.
-      var newIndex = $scope.model.getTopicIndex(_activeTopicId);
-
-      // Make sure that that topic is the active topic.
-      $scope.model.activateTopicIndex(newIndex);
-
-      // TODO: Clear out all startTimes for any topic past the current one.
-
       // Push state.
       _pushSharedState();
     }
@@ -165,135 +157,10 @@ function HangDownListCntr($scope) {
     return result;
   };
 
-  $scope.regressTopic = _gapiUpdatingFunction(function(){
-    // Only regress if the topic is not already the first.
-    if ($scope.activeTopicIndex > 0) {
-      // Null the current topic's start time, end time, and duration.
-      $scope.topics[$scope.activeTopicIndex].startTime
-        = $scope.topics[$scope.activeTopicIndex].duration
-        = null;
-
-      // Regress the topic.
-      $scope.model.activateTopicIndex($scope.activeTopicIndex-1);
-
-      // Submit changes to Google.
-      _pushSharedState();
-    }
-  });
-
-  $scope.advanceTopic = _gapiUpdatingFunction(function(){
-    // Only advance if the topic is not already the last.
-    if ($scope.activeTopicIndex < $scope.topics.length - 1) {
-      // Close out the previous topic's end time and duration.
-      $scope.topics[$scope.activeTopicIndex].duration =
-        $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
-      $scope.topics[$scope.activeTopicIndex].startTime = null;
-
-      // Advance the topic.
-      $scope.model.activateTopicIndex($scope.activeTopicIndex+1);
-
-      // Submit changes to Google.
-      _pushSharedState();
-    }
-  });
-
-  var _topicIndex = 0;
-  var createTopic = function(newLabel){
-    return {
-      id: new Date().getTime() + '-' + $scope.currentUser.id + '-' + _topicIndex++,
-      label: newLabel,
-      creator: $scope.currentUser.person.displayName,
-      startTime: null,
-      duration: null
-    };
-  };
-
-  // TODO: Get rid of the requirements on the buffer here.
-  $scope.newTopicBuffer = '';
-  $scope.addNewTopic = _gapiUpdatingFunction(function(){
-    // If there is no topic set, bail.
-    if (!$scope.newTopicBuffer.length) return;
-
-    // If there are any ';;', break the topic into multiple topics.
-    var newTopics = $scope.newTopicBuffer.split(';;');
-    $scope.newTopicBuffer = '';
-
-    // Push add all topics.
-    for (var i = 0; i < newTopics.length; i++) {
-      $scope.topics.push(createTopic(newTopics[i].trim()));
-    };
-
-    // If this is the first topic, go ahead an activate it.
-    if (_activeTopicId == null) {
-      $scope.model.activateTopicIndex(0);
-
-      // Set the conversation and topic start times.
-      $scope.conversationStart = $scope.topics[$scope.activeTopicIndex].startTime = new Date().getTime();
-    }
-
-    // If there is no time counting event running, create one.
-    if (_timeCounterEvent == null) {
-      _timeCounterEvent = setInterval(function(){
-        // Update the current topic duration.
-        $scope.topics[$scope.activeTopicIndex].duration =
-          $scope.formatDuration($scope.topics[$scope.activeTopicIndex].startTime);
-
-        // Apply the changes.
-        $scope.$apply();
-      }, 1000);
-    }
-
-    // Submit changes to Google.
-    _pushSharedState();
-  });
-
-  $scope.deleteTopic = _gapiUpdatingFunction(function(deleteTopicId){
-    // If we're about to delete the current topic,
-    // determine the next topic to select.
-    if (deleteTopicId == _activeTopicId) {
-      // If the next topic exists, use it.
-      if ($scope.topics.length > ($scope.activeTopicIndex + 1))
-        _activeTopicId = $scope.topics[$scope.activeTopicIndex+1].id;
-
-      // Otherwise, if the previous topic exists, use it.
-      else if ($scope.activeTopicIndex > 0)
-        _activeTopicId = $scope.topics[$scope.activeTopicIndex-1].id;
-
-      // Otherwise, our topics list is about to be empty.
-      // Other plans will have to be made.
-      
-      // Purge the current index.
-      $scope.activeTopicIndex = -1;
-    }
-
-    // Filter the array.
-    var initialLength = $scope.topics.length;
-    $scope.topics = $scope.topics.filter(function(topic){ return topic.id != deleteTopicId; });
-
-    // If the length hasn't changed, we're done.
-    if (initialLength == $scope.topics.length) return;
-
-    // If we're replacing the current topic, set a new topic.
-    var newIndex = $scope.model.getTopicIndex(_activeTopicId);
-    if (newIndex == null) newIndex = 0;
-    $scope.model.activateTopicIndex(newIndex);
-
-    // If the topic list is empty, stop the counter and end the conversation.
-    if (!$scope.topics.length) {
-      // Stop any counter event.
-      if (_timeCounterEvent != null)
-        clearInterval(_timeCounterEvent);
-
-      // Clear out all model fields.
-      _timeCounterEvent = null;
-      $scope.conversationStart = null;
-      $scope.activeTopicIndex = 0;
-      _activeTopicId = null;
-    }
-
-    // Push state.
-    _pushSharedState();
-  });
+  // Create all the public functions.
+  $scope.advanceTopics = _gapiUpdatingFunction($scope.model.advanceTopics);
+  $scope.addNewTopic = _gapiUpdatingFunction($scope.model.addTopic);
+  $scope.deleteTopic = _gapiUpdatingFunction($scope.model.deleteTopic);
 
   var initGapiModel = function(){
     // Create expected values in the shared model.
