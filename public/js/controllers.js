@@ -3,15 +3,13 @@
 /* Controllers */
 
 function HangDownListCntr($scope) {
-  $scope.apiLive = false;
+  var _apiLive = false;
   var _apiRequiredFunction = function(innerFunction){ return function(){
-    if ($scope.apiLive) innerFunction.apply(this, arguments);
+    if (_apiLive) innerFunction.apply(this, arguments);
   }; };
 
   $scope.topics = [];
-
-  var _activeTopicId = null;
-  $scope.activeTopicIndex = 0;
+  
   $scope.currentUser = null;
 
   $scope.conversationStart = null;
@@ -276,7 +274,7 @@ function HangDownListCntr($scope) {
     else applySharedState(initialState);
 
     // Set up internal model to work with gapi.
-    $scope.apiLive = true;
+    _apiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
 
     // Install the event handler for a change in model state.
