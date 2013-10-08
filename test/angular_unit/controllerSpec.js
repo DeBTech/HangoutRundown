@@ -245,11 +245,70 @@ describe('HangDownListController', function(){
   //===========================================================================
   // GAPI
   //===========================================================================
-  xit('should initialize the gapi correctly if it has\'t been already', function(){ expect(true).toBe(false); });
-  xit('should initialize with the shared state if one already exists', function(){ expect(true).toBe(false); });
+  describe('gapi interface', function(){
+    beforeEach(function(){
+      gapi.isEnabled = true;
+    });
 
-  xit('should not apply gapi updates if self-originated', function(){ expect(true).toBe(false); });
-  xit('should apply gapi updates that are not self-originated', function(){ expect(true).toBe(false); });
+    it('should initialize the gapi correctly if it has\'t been already', function(){
+      // Verify that the GAPI has an empty state.
+      expect(Object.keys(gapi.hangout.data.currentState).length).toEqual(0);
+
+      // Create a new controller interface.
+      ctrl = new HangDownListCntr(scope);
+
+      // Make sure that the required elements have be defined.
+      var newState = gapi.hangout.data.getState();
+      expect(newState.conversationDuration).toBeDefined();
+      expect(newState.currentTopic).toBeDefined();
+      expect(newState.pastTopics).toBeDefined();
+      expect(newState.futureTopics).toBeDefined();
+    });
+
+    it('should initialize with the shared state if one already exists', function(){
+      // Create a sample state.
+      var newTopic = scope.model.createTopic('New Topic', 'Test User');
+      newTopic.duration = 13;
+      gapi.hangout.data.currentState = {
+        conversationDuration: JSON.stringify(13),
+        currentTopic: JSON.stringify(newTopic)
+      };
+
+      // Create a new controller interface.
+      ctrl = new HangDownListCntr(scope);
+
+      // Validate the state.
+      expect(scope.conversationDuration).toEqual(13);
+      expect(scope.currentTopic.contents).toEqual('New Topic');
+      expect(scope.currentTopic.duration).toEqual(13);
+    });
+
+    it('should not apply gapi updates if self-originated', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+
+      // Create a sample update.
+      var newTopic = scope.model.createTopic('Another New Topic', 'Test User');
+      gapi.hangout.data.submitDelta({
+        currentTopic: JSON.stringify(newTopic),
+        modifier: scope.currentUser.id
+      });
+
+      expect(scope.currentTopic.contents).toEqual('New Topic');
+    });
+
+    it('should apply gapi updates that are not self-originated', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+
+      // Create a sample update.
+      var newTopic = scope.model.createTopic('Another New Topic', 'Test User');
+      gapi.hangout.data.submitDelta({
+        currentTopic: JSON.stringify(newTopic),
+        modifier: 'NonId'
+      });
+
+      expect(scope.currentTopic.contents).toEqual('Another New Topic');
+    });
+  });
 
   //===========================================================================
   // MISC

@@ -169,9 +169,10 @@ function HangDownListCntr($scope) {
   var initGapiModel = function(){
     // Create expected values in the shared model.
     gapi.hangout.data.submitDelta({
-      activeTopicIndex: JSON.stringify(0),
-      topics: JSON.stringify([]),
-      conversationStart: JSON.stringify(null)
+      conversationDuration: JSON.stringify(null),
+      currentTopic: JSON.stringify(null),
+      pastTopics: JSON.stringify([]),
+      futureTopics: JSON.stringify([])
     });
   };
 
@@ -201,13 +202,11 @@ function HangDownListCntr($scope) {
   };
 
   var applySharedState = function(newState){
-    // Update the internal model.
-    $scope.topics = JSON.parse(newState.topics);
-    if (newState.conversationStart)
-      $scope.conversationStart = JSON.parse(newState.conversationStart);
-
-    // Make sure that the activeTopicIndex is updated.
-    $scope.model.activateTopicIndex(JSON.parse(newState.activeTopicIndex));
+    // Copy available elements of the state.
+    if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
+    if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
+    if (newState.pastTopics) $scope.pastTopics = JSON.parse(newState.pastTopics);
+    if (newState.conversationDuration) $scope.conversationDuration = JSON.parse(newState.conversationDuration);
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
@@ -216,14 +215,14 @@ function HangDownListCntr($scope) {
   gapi.hangout.onApiReady.add(function(eventObj){
     var initialState = gapi.hangout.data.getState();
 
-    // If the state has not been initialized, do that now.
-    if (initialState.activeTopicIndex == undefined) initGapiModel();
-    // Otherwise, update internal state with shared state.
-    else applySharedState(initialState);
-
     // Set up internal model to work with gapi.
     _gapiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
+
+    // If the state has not been initialized, do that now.
+    if (Object.keys(initialState).length == 0) initGapiModel();
+    // Otherwise, update internal state with shared state.
+    else applySharedState(initialState);
 
     // Install the event handler for a change in model state.
     gapi.hangout.data.onStateChanged.add(processStateUpdate);
