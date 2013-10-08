@@ -60,8 +60,10 @@ function HangDownListCntr($scope) {
         if (!newTopic.length) continue;
 
         // If there is no current topic, set it.
-        if ($scope.currentTopic == null)
+        if ($scope.currentTopic == null) {
           $scope.currentTopic = model.createTopic(newTopic, creator);
+          model.startTimer();
+        }
         // Otherwise, add it to the future topics.
         else
           $scope.futureTopics.push(model.createTopic(newTopic, creator));
@@ -118,14 +120,20 @@ function HangDownListCntr($scope) {
       _activeTopicId = topic.id;
     };
 
-    // TODO:
-    // Move the rest of the model logic in here.
-    // Make sure that only the model is updated on any of these calls.
-    // Change _gapiUpdatingFunction() to _apiUpdatingFunction() and have
-    //  it test for GAPI *and* call _pushSharedState() at the end.
-    // Use _apiUpdatingFunction() to create the publicly-visible scope functions
-    //  by wrapping the internal model functions.
-    // This will leave the model testable independently of any API nonsense.
+    var _timerEvent = null;
+    model.startTimer = function(){
+      $scope.conversationDuration = 0;
+      _timerEvent = setInterval(function(){
+        $scope.conversationDuration++;
+        $scope.currentTopic.duration++;
+      }, 1000);
+    };
+    model.stopTimer = function(){
+      if (_timerEvent) {
+        clearInterval(_timerEvent);
+        _timerEvent = null;
+      }
+    };
 
     // Make sure to return the closure.
     return model;

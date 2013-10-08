@@ -193,12 +193,54 @@ describe('HangDownListController', function(){
   //===========================================================================
   // CONVERSATION
   //===========================================================================
-  // Use jasmine.Clock.useMock();
-  xit('should start the conversation when the first topic is created', function(){ expect(true).toBe(false); });
+  describe('conversation counters', function(){
+    beforeEach(function(){
+      jasmine.Clock.useMock();
+    });
 
-  xit('should not change the conversation start time after the first topic is created', function(){ expect(true).toBe(false); });
+    it('should start the conversation when the first topic is created', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+      expect(scope.conversationDuration).toEqual(0);
+      expect(scope.currentTopic.duration).toEqual(0);
 
-  xit('should update durations on every tick', function(){ expect(true).toBe(false); });
+      jasmine.Clock.tick(2500);
+
+      expect(scope.conversationDuration).toEqual(2);
+      expect(scope.currentTopic.duration).toEqual(2);
+    });
+
+    it('should update durations on every tick', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+      jasmine.Clock.tick(2500);
+      expect(scope.conversationDuration).toEqual(2);
+      jasmine.Clock.tick(1000);
+      expect(scope.conversationDuration).toEqual(3);
+      jasmine.Clock.tick(1000);
+      expect(scope.conversationDuration).toEqual(4);
+    });
+
+    it('should not change the conversation start time after the first topic is created', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+      jasmine.Clock.tick(2500);
+      expect(scope.conversationDuration).toEqual(2);
+
+      scope.model.addTopic('Another New Topic', 'Test User');
+      jasmine.Clock.tick(1000);
+      expect(scope.conversationDuration).toEqual(3);
+    });
+
+    it('should keep the time for past topics', function(){
+      scope.model.addTopic('New Topic', 'Test User');
+      jasmine.Clock.tick(2500);
+      expect(scope.currentTopic.duration).toEqual(2);
+
+      scope.model.addTopic('Another New Topic', 'Test User');
+      scope.model.advanceTopics();
+      jasmine.Clock.tick(1000);
+      expect(scope.currentTopic.duration).toEqual(1);
+      expect(scope.pastTopics[0].duration).toEqual(2);
+    });
+  });
 
   //===========================================================================
   // GAPI
