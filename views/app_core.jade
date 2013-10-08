@@ -15,20 +15,36 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
     p#HangDownTagLine Conversations on 
       span.highlight Point
   
-  ul#HangDownTopics(ui-sortable='topicSortConfig', ng-model='topics')
-    li(ng-repeat="topic in topics", ng-class="{ active: (activeTopicIndex == $index), past: (activeTopicIndex > $index) }")
+  #HangDownTopics
+    ul#PastTopics
+      li(ng-repeat="topic in pastTopics")
+        .main
+          p.title {{topic.contents}}
+          p.creator {{topic.creator}}
+        .time
+          span {{topic.duration}}
+
+    #CurrentTopic(ng-if="currentTopic != null")
       .main
-        p.title {{topic.label}}
-        p.creator {{topic.creator}}
-        button(ng-click="deleteTopic('{{topic.id}}')").delete-topic Delete
+        p.title {{currentTopic.contents}}
+        p.creator {{currentTopic.creator}}
+        button(ng-click="deleteTopic('{{currentTopic.id}}')").delete-topic Delete
       .time
-        span(ng-if="topic.duration != null") {{topic.duration}}
+        span {{formatDuration(currentTopic.duration)}}
+
+    ul#FutureTopics(ui-sortable='topicSortConfig', ng-model='futureTopics')
+      li(ng-repeat="topic in futureTopics")
+        .main
+          p.title {{topic.contents}}
+          p.creator {{topic.creator}}
+          button(ng-click="deleteTopic('{{topic.id}}')").delete-topic Delete
+        .time
 
   footer#HangDownControls
     #HangDownButtons
       button(ng-click="advanceTopics()") Advance
-    form#HangDownAddTopic(ng-submit="addNewTopic(newTopicBuffer); newTopicBuffer='';")
+    form#HangDownAddTopic(ng-submit="addNewTopic(newTopicBuffer, currentUser.person.displayName); newTopicBuffer='';")
       input(ng-model="newTopicBuffer", placeholder="New Topic...")
       button(type="submit") Add
-    #HangDownConversationTimer(ng-if="conversationStart != null")
-      {{formatDuration(conversationStart)}}
+    #HangDownConversationTimer(ng-if="conversationDuration != null")
+      {{formatDuration(conversationDuration)}}

@@ -87,6 +87,7 @@ function HangDownListCntr($scope) {
     model.advanceTopics = function(){
       // Only advance if there are more topics to advance to.
       if ($scope.futureTopics.length) {
+        $scope.currentTopic.duration = $scope.formatDuration($scope.currentTopic.duration);
         $scope.pastTopics.push($scope.currentTopic);
         $scope.currentTopic = $scope.futureTopics.shift()
       }
@@ -126,6 +127,7 @@ function HangDownListCntr($scope) {
       _timerEvent = setInterval(function(){
         $scope.conversationDuration++;
         $scope.currentTopic.duration++;
+        $scope.$apply();
       }, 1000);
     };
     model.stopTimer = function(){
