@@ -146,15 +146,11 @@ function HangDownListCntr($scope) {
     }
   };
 
-  $scope.formatDuration = function(fromTime, toTime){
-    if (toTime == undefined) toTime = new Date().getTime();
-    var timeDiff = toTime - fromTime;
-
-    var hours = parseInt(timeDiff / (60*60*1000));
-    var hourRem = timeDiff % (60*60*1000);
-    var minutes = parseInt(hourRem / (60*1000));
-    var minuteRem = hourRem % (60*1000);
-    var seconds = parseInt(minuteRem / (1000));
+  $scope.formatDuration = function(durationInSeconds){
+    var hours = parseInt(durationInSeconds / (60*60));
+    var hourRem = durationInSeconds % (60*60);
+    var minutes = parseInt(hourRem / (60));
+    var seconds = hourRem % 60
 
     var result = hours.toString() + ":";
     if (minutes < 10) result += "0";

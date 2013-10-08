@@ -254,8 +254,8 @@ describe('HangDownListController', function(){
   //===========================================================================
   // MISC
   //===========================================================================
-  xdescribe('randomly', function(){
-    xit('should be able to format durations in a conversation-readable way', function(){
+  describe('randomly', function(){
+    it('should be able to format durations in a conversation-readable way', function(){
       expect(scope.formatDuration).toBeDefined();
       var duration = 1*60*60 + 13*60 + 30;
       var formattedDuration = scope.formatDuration(duration);
