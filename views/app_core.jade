@@ -17,14 +17,14 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   
   #HangDownTopics
     ul#PastTopics
-      li(ng-repeat="topic in pastTopics")
+      li.topic(ng-repeat="topic in pastTopics")
         .main
           p.title {{topic.contents}}
           p.creator {{topic.creator}}
         .time
           span {{topic.duration}}
 
-    #CurrentTopic(ng-if="currentTopic != null")
+    #CurrentTopic.topic(ng-if="currentTopic != null")
       .main
         p.title {{currentTopic.contents}}
         p.creator {{currentTopic.creator}}
@@ -33,7 +33,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
         span {{formatDuration(currentTopic.duration)}}
 
     ul#FutureTopics(ui-sortable='topicSortConfig', ng-model='futureTopics')
-      li(ng-repeat="topic in futureTopics")
+      li.topic(ng-repeat="topic in futureTopics")
         .main
           p.title {{topic.contents}}
           p.creator {{topic.creator}}
@@ -43,6 +43,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   footer#HangDownControls
     #HangDownButtons
       button(ng-click="advanceTopics()") Advance
+        img(src=appUrl+"/img/glyphicons_176_forward.png")
     form#HangDownAddTopic(ng-submit="addNewTopic(newTopicBuffer, currentUser.person.displayName); newTopicBuffer='';")
       input(ng-model="newTopicBuffer", placeholder="New Topic...")
       button(type="submit") Add

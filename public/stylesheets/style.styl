@@ -36,17 +36,24 @@
   overflow-y: scroll
   width: 100%
 
-li.past
+#HangDownTopics > *
+  margin-bottom: 0px  
+
+#PastTopics li
   color: lightgray
 
-li.active
+#CurrentTopic
   color: red
+
+#HangDownTopics .topic
+  margin-top: 5px
+  padding: 0 1em
 
 #HangDownTopics li
   list-style-type: none
-  margin-top: 5px
-  margin-left: -3em
-  padding: 0 1em
+  margin-left: -2.8em
+
+#FutureTopics li
   cursor: pointer
 
 #HangDownTopics .main
@@ -91,13 +98,14 @@ li.active
 #HangDownButtons
   margin-bottom: 5px
 
-#HangDownButtons button:first-child
-  border-bottom-left-radius: 10px
-  border-top-left-radius: 10px
-
-#HangDownButtons button:last-child
+#HangDownButtons button
   border-bottom-right-radius: 10px
   border-top-right-radius: 10px
+  padding: 2px 5px
+  background-color: orange
+
+#HangDownButtons button img
+  margin-left: 10px
 
 #HangDownAddTopic
   margin-bottom: 5px
