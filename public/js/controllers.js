@@ -123,6 +123,8 @@ function HangDownListCntr($scope) {
 
     var _timerEvent = null;
     model.startTimer = function(){
+      // TODO: Only start the timer if there's not already an event.
+      // TODO: Don't reset conversation duration if resuming an existing conversation.
       $scope.conversationDuration = 0;
       _timerEvent = setInterval(function(){
         $scope.conversationDuration++;
@@ -204,11 +206,16 @@ function HangDownListCntr($scope) {
   };
 
   var applySharedState = function(newState){
+    // TODO: Might have to filter $$hashKey properties out of these arrays.
+    //       It was causing problems in the last implementation.
+
     // Copy available elements of the state.
     if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
     if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
     if (newState.pastTopics) $scope.pastTopics = JSON.parse(newState.pastTopics);
     if (newState.conversationDuration) $scope.conversationDuration = JSON.parse(newState.conversationDuration);
+
+    // TODO: When applying a conversation, if there's not a timer event already started, get that shit going.
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
