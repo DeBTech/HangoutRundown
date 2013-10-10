@@ -77,6 +77,8 @@ function HangDownListCntr($scope) {
 
       // TODO: Decide whether you should be able to delete the current topic.
 
+      // TODO: If deleting the last topic, stop the conversation timer.
+
       // Check to see if the current topic should be deleted.
       if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
         // If it should, either replace it with the first future topic, or null.
