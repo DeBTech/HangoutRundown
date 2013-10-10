@@ -15,8 +15,12 @@ Things I Learned While Writing This
 
 TODO
 ====
+- Change colors for each name.
+- Delete button should move to left and be an small minus or x.
+
 - Get some actual graphics.
 - Set up an "about" page.
+
 - Enable pausing?
 - Potentially change the room topic when changing to a new rundown topic?
 - Enable conversation moderator (admin).
