@@ -75,6 +75,8 @@ function HangDownListCntr($scope) {
       // Filter the future topics.
       $scope.futureTopics = $scope.futureTopics.filter(function(topic){ return topic.id != topicId; });
 
+      // TODO: Decide whether you should be able to delete the current topic.
+
       // Check to see if the current topic should be deleted.
       if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
         // If it should, either replace it with the first future topic, or null.
@@ -114,7 +116,8 @@ function HangDownListCntr($scope) {
       if (_timerEvent == null) {
         _timerEvent = setInterval(function(){
           $scope.conversationDuration++;
-          $scope.currentTopic.duration++;
+          if ($scope.currentTopic != null)
+            $scope.currentTopic.duration++;
           $scope.$apply();
         }, 1000);
       }
@@ -219,6 +222,10 @@ function HangDownListCntr($scope) {
     // Set up internal model to work with gapi.
     _gapiLive = true;
     $scope.currentUser = gapi.hangout.getLocalParticipant();
+
+    // TODO: Figure out delta from server time.
+    // TODO: Store all timestamps in server time.
+    // TODO: Format all time durations in server time.
 
     // If the state has not been initialized, do that now.
     if (Object.keys(initialState).length == 0) initGapiModel();
