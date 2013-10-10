@@ -104,23 +104,6 @@ function HangDownListCntr($scope) {
       return result;
     };
 
-    model.activateTopicIndex = function(topicIndex){
-      // If this index doesn't exist, do nothing.
-      if (topicIndex >= $scope.topics.length || topicIndex < 0) return;
-
-      // If this index is already set, do nothing.
-      if (topicIndex == $scope.activeTopicIndex && $scope.topics[topicIndex].id == _activeTopicId) return;
-
-      var topic = $scope.topics[topicIndex];
-      // If the timer isn't already running, give it a go.
-      if (topic.startTime == null) topic.startTime = new Date().getTime();
-      topic.duration = $scope.formatDuration(topic.startTime);
-
-      // Set up the model.
-      $scope.activeTopicIndex = topicIndex;
-      _activeTopicId = topic.id;
-    };
-
     var _timerEvent = null;
     model.startTimer = function(){
       // TODO: Only start the timer if there's not already an event.
@@ -184,9 +167,10 @@ function HangDownListCntr($scope) {
     // If there was no state provided, just push the whole system.
     if (!stateDelta) {
       stateDelta = {
-        activeTopicIndex: JSON.stringify($scope.activeTopicIndex),
-        topics: JSON.stringify($scope.topics),
-        conversationStart: JSON.stringify($scope.conversationStart)
+        conversationDuration: JSON.stringify($scope.conversationDuration),
+        currentTopic: JSON.stringify($scope.currentTopic),
+        pastTopics: JSON.stringify($scope.pastTopics),
+        futureTopics: JSON.stringify($scope.futureTopics)
       };
     }
 
