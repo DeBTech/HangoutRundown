@@ -106,20 +106,27 @@ function HangDownListCntr($scope) {
 
     var _timerEvent = null;
     model.startTimer = function(){
-      // TODO: Only start the timer if there's not already an event.
-      // TODO: Don't reset conversation duration if resuming an existing conversation.
-      $scope.conversationDuration = 0;
-      _timerEvent = setInterval(function(){
-        $scope.conversationDuration++;
-        $scope.currentTopic.duration++;
-        $scope.$apply();
-      }, 1000);
+      // If the conversation duration hasn't been set, set it now.
+      if ($scope.conversationDuration == null)
+        $scope.conversationDuration = 0;
+
+      // If there's no timer event running, create one.
+      if (_timerEvent == null) {
+        _timerEvent = setInterval(function(){
+          $scope.conversationDuration++;
+          $scope.currentTopic.duration++;
+          $scope.$apply();
+        }, 1000);
+      }
     };
     model.stopTimer = function(){
       if (_timerEvent) {
         clearInterval(_timerEvent);
         _timerEvent = null;
       }
+    };
+    model.isTimerRunning = function(){
+      return _timerEvent != null;
     };
 
     // Make sure to return the closure.
@@ -199,7 +206,8 @@ function HangDownListCntr($scope) {
     if (newState.pastTopics) $scope.pastTopics = JSON.parse(newState.pastTopics);
     if (newState.conversationDuration) $scope.conversationDuration = JSON.parse(newState.conversationDuration);
 
-    // TODO: When applying a conversation, if there's not a timer event already started, get that shit going.
+    // When applying a conversation, if there's not a timer event already started, get that shit going.
+    if (!$scope.model.isTimerRunning()) $scope.model.startTimer();
 
     $scope.$apply();  // Have to do this to force the view to update.
   };
