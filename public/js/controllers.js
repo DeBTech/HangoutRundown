@@ -277,7 +277,7 @@ function HangDownListCntr($scope) {
   $scope.deleteTopic = $scope.gapi.updatingFunction($scope.model.deleteTopic);
 
   $scope.formatDuration = function(fromTime, toTime){
-    if (toTime == undefined) toTime = new Date().getTime();
+    if (toTime == undefined) toTime = $scope.gapi.getServerTime();
     var timeDiff = parseInt((toTime - fromTime)/1000);
 
     var hours = parseInt(timeDiff / (60*60));
