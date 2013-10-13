@@ -30,7 +30,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
         p.creator {{currentTopic.creator}}
         button(ng-click="deleteTopic('{{currentTopic.id}}')").delete-topic Delete
       .time
-        span {{formatDuration(currentTopic.duration)}}
+        span {{formatDuration(currentTopic.startTime)}}
 
     ul#FutureTopics(ui-sortable='topicSortConfig', ng-model='futureTopics')
       li.topic(ng-repeat="topic in futureTopics")
@@ -47,5 +47,5 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
     form#HangDownAddTopic(ng-submit="addNewTopic(newTopicBuffer, currentUser.person.displayName); newTopicBuffer='';")
       input(ng-model="newTopicBuffer", placeholder="New Topic...")
       button(type="submit") Add
-    #HangDownConversationTimer(ng-if="conversationDuration != null")
-      {{formatDuration(conversationDuration)}}
+    #HangDownConversationTimer(ng-if="conversationStart != null")
+      {{formatDuration(conversationStart)}}

@@ -9,131 +9,13 @@ function HangDownListCntr($scope) {
   $scope.currentTopic = null;
   $scope.futureTopics = [];
 
-  $scope.conversationDuration = null;
+  $scope.conversationStart = null;
 
-  $scope.model = (function(model){
-    // CreateTopic()
-    var _topicCounter = 0;
-    model.createTopic = function(topicName, creatorName){
-      // Figure out the creator's name.
-      var creatorNameComponents = creatorName.split(' ');
-      var creator = creatorNameComponents[0];
-      if (creatorNameComponents[1] != undefined)
-        creator += ' ' + creatorNameComponents[1][0];
-
-      // Create a sufficiently random ID.
-      var id = creatorNameComponents[0] + '-';
-      id += new Date().getTime() + '-';
-      id += _topicCounter++;
-
-      return {
-        id: id,
-        contents: topicName,
-        creator: creator,
-        duration: 0
-      };
-    };
-
-    // AddTopic()
-    model.addTopic = function(topic, creator){
-      // First, bail if there is no topic to add.
-      if (topic == undefined || !topic.length) return;
-
-      // Next, split the topic if need-be.
-      // ';;' and '\n' should delineate topics.
-      var topics = topic.split(/[\n(;;)]/);
-
-
-      // Process through all topics.
-      for (var i = 0; i < topics.length; i++) {
-        var newTopic = topics[i].trim();
-        // If there's nothing left of it after trimming, move on.
-        if (!newTopic.length) continue;
-
-        // If there is no current topic, set it.
-        if ($scope.currentTopic == null) {
-          $scope.currentTopic = model.createTopic(newTopic, creator);
-          model.startTimer();
-        }
-        // Otherwise, add it to the future topics.
-        else
-          $scope.futureTopics.push(model.createTopic(newTopic, creator));
-      };
-    };
-
-    // DeleteTopic()
-    model.deleteTopic = function(topicId){
-      // Filter the future topics.
-      $scope.futureTopics = $scope.futureTopics.filter(function(topic){ return topic.id != topicId; });
-
-      // TODO: Decide whether you should be able to delete the current topic.
-
-      // TODO: If deleting the last topic, stop the conversation timer.
-
-      // Check to see if the current topic should be deleted.
-      if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
-        // If it should, either replace it with the first future topic, or null.
-        $scope.currentTopic = ($scope.futureTopics.length) ? 
-          $scope.currentTopic = $scope.futureTopics.shift() :
-          null;
-    };
-
-    // AdvanceTopics()
-    model.advanceTopics = function(){
-      // Only advance if there are more topics to advance to.
-      if ($scope.futureTopics.length) {
-        $scope.currentTopic.duration = $scope.formatDuration($scope.currentTopic.duration);
-        $scope.pastTopics.push($scope.currentTopic);
-        $scope.currentTopic = $scope.futureTopics.shift()
-      }
-    };
-
-    model.findTopicInList = function(topicId, topicList){
-      var result = -1;
-      for (var i = topicList.length - 1; i >= 0; i--) {
-        if (topicList[i].id == topicId) {
-          result = i;
-          break;
-        }
-      };
-      return result;
-    };
-
-    var _timerEvent = null;
-    model.startTimer = function(){
-      // If the conversation duration hasn't been set, set it now.
-      if ($scope.conversationDuration == null)
-        $scope.conversationDuration = 0;
-
-      // If there's no timer event running, create one.
-      if (_timerEvent == null) {
-        _timerEvent = setInterval(function(){
-          $scope.conversationDuration++;
-          if ($scope.currentTopic != null)
-            $scope.currentTopic.duration++;
-          $scope.$apply();
-        }, 1000);
-      }
-    };
-    model.stopTimer = function(){
-      if (_timerEvent) {
-        clearInterval(_timerEvent);
-        _timerEvent = null;
-      }
-    };
-    model.isTimerRunning = function(){
-      return _timerEvent != null;
-    };
-
-    // Make sure to return the closure.
-    return model;
-  })({});
-
-  $scope.topicSortConfig = {
-    stop: function(e, ui){
-      // Push state.
-      $scope.gapi.pushSharedState();
-    }
+  // Scaffold some shared functions.
+  // NOTE: I hate this, but right now it solves the problem.
+  $scope.model = {
+    isTimerRunning: function(){},
+    startConversation: function(){}
   };
 
   $scope.gapi = (function(myGapi){
@@ -155,7 +37,7 @@ function HangDownListCntr($scope) {
     var _initGapiModel = function(){
       // Create expected values in the shared model.
       gapi.hangout.data.submitDelta({
-        conversationDuration: JSON.stringify(null),
+        conversationStart: JSON.stringify(null),
         currentTopic: JSON.stringify(null),
         pastTopics: JSON.stringify([]),
         futureTopics: JSON.stringify([])
@@ -170,7 +52,7 @@ function HangDownListCntr($scope) {
       // If there was no state provided, just push the whole system.
       if (!stateDelta) {
         stateDelta = {
-          conversationDuration: JSON.stringify($scope.conversationDuration),
+          conversationStart: JSON.stringify($scope.conversationStart),
           currentTopic: JSON.stringify($scope.currentTopic),
           pastTopics: JSON.stringify($scope.pastTopics),
           futureTopics: JSON.stringify($scope.futureTopics)
@@ -203,10 +85,10 @@ function HangDownListCntr($scope) {
       if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
       if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
       if (newState.pastTopics) $scope.pastTopics = JSON.parse(newState.pastTopics);
-      if (newState.conversationDuration) $scope.conversationDuration = JSON.parse(newState.conversationDuration);
+      if (newState.conversationStart) $scope.conversationStart = JSON.parse(newState.conversationStart);
 
       // When applying a conversation, if there's not a timer event already started, get that shit going.
-      if (!$scope.model.isTimerRunning()) $scope.model.startTimer();
+      if (!$scope.model.isTimerRunning()) $scope.model.startConversation();
 
       $scope.$apply();  // Have to do this to force the view to update.
     };
@@ -235,11 +117,15 @@ function HangDownListCntr($scope) {
         // First, remove this callback from the notification list for gapi.
         gapi.hangout.data.onStateChanged.remove(_completeInitialization);
 
-        console.log(stateChangedEvent);
+        // Determine the time delta between the local and server time.
+        if (stateChangedEvent.metadata[timeKey] != undefined) {
+          var timeKeyElement = stateChangedEvent.metadata[timeKey];
 
-        // TODO: Figure out delta from server time.
-        // TODO: Store all timestamps in server time.
-        // TODO: Format all time durations in server time.
+          _serverTimeDelta = timeKeyElement.timestamp - parseInt(timeKeyElement.value);
+
+          // Remember to clear the time element.
+          gapi.hangout.data.clearValue(timeKey);
+        }
 
         // Install the event handler for a change in model state.
         gapi.hangout.data.onStateChanged.add(_processStateUpdate);
@@ -257,6 +143,132 @@ function HangDownListCntr($scope) {
     return myGapi;
   })({});
 
+  $scope.model = (function(model){
+    // CreateTopic()
+    var _topicCounter = 0;
+    model.createTopic = function(topicName, creatorName){
+      // Figure out the creator's name.
+      var creatorNameComponents = creatorName.split(' ');
+      var creator = creatorNameComponents[0];
+      if (creatorNameComponents[1] != undefined)
+        creator += ' ' + creatorNameComponents[1][0];
+
+      // Create a sufficiently random ID.
+      var id = creatorNameComponents[0] + '-'
+               + $scope.gapi.getServerTime() + '-'
+               + _topicCounter++;
+
+      return {
+        id: id,
+        contents: topicName,
+        creator: creator,
+        duration: null,
+        startTime: null
+      };
+    };
+
+    // AddTopic()
+    model.addTopic = function(topic, creator){
+      // First, bail if there is no topic to add.
+      if (topic == undefined || !topic.length) return;
+
+      // Next, split the topic if need-be.
+      // ';;' and '\n' should delineate topics.
+      var topics = topic.split(/[\n(;;)]/);
+
+
+      // Process through all topics.
+      for (var i = 0; i < topics.length; i++) {
+        var newTopic = topics[i].trim();
+        // If there's nothing left of it after trimming, move on.
+        if (!newTopic.length) continue;
+
+        // If there is no current topic, set it.
+        if ($scope.currentTopic == null) {
+          $scope.currentTopic = model.createTopic(newTopic, creator);
+          $scope.currentTopic.startTime = $scope.gapi.getServerTime();
+          model.startConversation();
+        }
+        // Otherwise, add it to the future topics.
+        else
+          $scope.futureTopics.push(model.createTopic(newTopic, creator));
+      };
+    };
+
+    // DeleteTopic()
+    model.deleteTopic = function(topicId){
+      // Filter the future topics.
+      $scope.futureTopics = $scope.futureTopics.filter(function(topic){ return topic.id != topicId; });
+
+      // TODO: Decide whether you should be able to delete the current topic.
+
+      // TODO: If deleting the last topic, stop the conversation timer.
+
+      // Check to see if the current topic should be deleted.
+      if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
+        // If it should, either replace it with the first future topic, or null.
+        $scope.currentTopic = ($scope.futureTopics.length) ? 
+          $scope.currentTopic = $scope.futureTopics.shift() :
+          null;
+    };
+
+    // AdvanceTopics()
+    model.advanceTopics = function(){
+      // Only advance if there are more topics to advance to.
+      if ($scope.futureTopics.length) {
+        $scope.currentTopic.duration = $scope.formatDuration($scope.currentTopic.startTime);
+        $scope.currentTopic.startTime = null;
+        $scope.pastTopics.push($scope.currentTopic);
+        $scope.currentTopic = $scope.futureTopics.shift();
+        $scope.currentTopic.startTime = $scope.gapi.getServerTime();
+      }
+    };
+
+    model.findTopicInList = function(topicId, topicList){
+      var result = -1;
+      for (var i = topicList.length - 1; i >= 0; i--) {
+        if (topicList[i].id == topicId) {
+          result = i;
+          break;
+        }
+      };
+      return result;
+    };
+
+    var _timerEvent = null;
+    model.startConversation = function(){
+      // If the conversation duration hasn't been set, set it now.
+      if ($scope.conversationStart == null)
+        $scope.conversationStart = $scope.gapi.getServerTime();
+
+      // If there's no timer event running, create one.
+      if (_timerEvent == null) {
+        _timerEvent = setInterval(function(){
+          $scope.$apply();
+        }, 1000);
+      }
+    };
+    model.stopConversation = function(){
+      if (_timerEvent) {
+        clearInterval(_timerEvent);
+        _timerEvent = null;
+      }
+    };
+    model.isTimerRunning = function(){
+      return _timerEvent != null;
+    };
+
+    // Make sure to return the closure.
+    return model;
+  })($scope.model || {});
+
+  $scope.topicSortConfig = {
+    stop: function(e, ui){
+      // Push state.
+      $scope.gapi.pushSharedState();
+    }
+  };
+
   //
   // Create all the public functions.
   //
@@ -264,11 +276,14 @@ function HangDownListCntr($scope) {
   $scope.addNewTopic = $scope.gapi.updatingFunction($scope.model.addTopic);
   $scope.deleteTopic = $scope.gapi.updatingFunction($scope.model.deleteTopic);
 
-  $scope.formatDuration = function(durationInSeconds){
-    var hours = parseInt(durationInSeconds / (60*60));
-    var hourRem = durationInSeconds % (60*60);
+  $scope.formatDuration = function(fromTime, toTime){
+    if (toTime == undefined) toTime = new Date().getTime();
+    var timeDiff = parseInt((toTime - fromTime)/1000);
+
+    var hours = parseInt(timeDiff / (60*60));
+    var hourRem = timeDiff % (60*60);
     var minutes = parseInt(hourRem / (60));
-    var seconds = hourRem % 60
+    var seconds = hourRem % (60);
 
     var result = hours.toString() + ":";
     if (minutes < 10) result += "0";

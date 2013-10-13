@@ -31,7 +31,7 @@ var gapi = function(gapi){
       // If the API is disabled, don't communicate any events.
       if (!gapi.isEnabled) return;
 
-      var StateChangeEvent = { state: State };
+      var StateChangeEvent = { state: State, metadata: {} };
       for (var i = _dataChangedCallbacks.length - 1; i >= 0; i--) {
         _dataChangedCallbacks[i](StateChangeEvent);
       };
@@ -48,7 +48,9 @@ var gapi = function(gapi){
         _informCallbacks(hangout.data.currentState);
       },
       onStateChanged: {
-        add: function(callback){ _dataChangedCallbacks.push(callback); }
+        add: function(callback){ _dataChangedCallbacks.push(callback); },
+        // NOTE: This is a terrible way to handle this, but it works for now.
+        remove: function(callback){ _dataChangedCallbacks = []; }
       }
     };
 

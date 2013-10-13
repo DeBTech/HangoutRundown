@@ -25,12 +25,12 @@ describe('HangDownListController', function(){
       expect(scope.pastTopics).toBeDefined();
       expect(scope.currentTopic).toBeDefined();
       expect(scope.futureTopics).toBeDefined();
-      expect(scope.conversationDuration).toBeDefined();
+      expect(scope.conversationStart).toBeDefined();
 
       expect(scope.pastTopics).toEqual([]);
       expect(scope.currentTopic).toBeNull();
       expect(scope.futureTopics).toEqual([]);
-      expect(scope.conversationDuration).toBeNull();
+      expect(scope.conversationStart).toBeNull();
 
       expect(scope.model).toBeDefined();
     });
@@ -120,6 +120,7 @@ describe('HangDownListController', function(){
       expect(newTopic.id).toBeDefined();
       expect(newTopic.creator).toEqual('Temp U');
       expect(newTopic.contents).toEqual('New Topic');
+      expect(newTopic.startTime).toBeNull();
       expect(newTopic.duration).toBeNull();
     });
 
@@ -199,52 +200,43 @@ describe('HangDownListController', function(){
     });
 
     it('should not start the conversation until a topic is created', function(){
-      expect(scope.conversationDuration).toBeNull();
-      jasmine.Clock.tick(2000);
-      expect(scope.conversationDuration).toBeNull();
+      expect(scope.conversationStart).toBeNull();
     });
 
     it('should start the conversation when the first topic is created', function(){
+      var preTime = new Date().getTime();
       scope.model.addTopic('New Topic', 'Test User');
-      expect(scope.conversationDuration).toEqual(0);
-      expect(scope.currentTopic.duration).toEqual(0);
+      var postTime = new Date().getTime();
 
-      jasmine.Clock.tick(2500);
-
-      expect(scope.conversationDuration).toEqual(2);
-      expect(scope.currentTopic.duration).toEqual(2);
-    });
-
-    it('should update durations on every tick', function(){
-      scope.model.addTopic('New Topic', 'Test User');
-      jasmine.Clock.tick(2500);
-      expect(scope.conversationDuration).toEqual(2);
-      jasmine.Clock.tick(1000);
-      expect(scope.conversationDuration).toEqual(3);
-      jasmine.Clock.tick(1000);
-      expect(scope.conversationDuration).toEqual(4);
+      expect(scope.conversationStart).not.toBeLessThan(preTime);
+      expect(scope.conversationStart).not.toBeGreaterThan(postTime);
+      expect(scope.currentTopic.startTime).not.toBeLessThan(preTime);
+      expect(scope.currentTopic.startTime).not.toBeGreaterThan(postTime);
     });
 
     it('should not change the conversation start time after the first topic is created', function(){
       scope.model.addTopic('New Topic', 'Test User');
-      jasmine.Clock.tick(2500);
-      expect(scope.conversationDuration).toEqual(2);
+      var origConversationStart = scope.conversationStart;
 
       scope.model.addTopic('Another New Topic', 'Test User');
-      jasmine.Clock.tick(1000);
-      expect(scope.conversationDuration).toEqual(3);
+      expect(scope.conversationStart).toEqual(origConversationStart);
     });
 
     it('should keep the time for past topics', function(){
       scope.model.addTopic('New Topic', 'Test User');
-      jasmine.Clock.tick(2500);
-      expect(scope.currentTopic.duration).toEqual(2);
+      expect(scope.currentTopic.startTime).not.toBeNull();
+      expect(scope.currentTopic.duration).toBeNull();
 
       scope.model.addTopic('Another New Topic', 'Test User');
+      expect(scope.futureTopics[0].startTime).toBeNull();
+      expect(scope.futureTopics[0].duration).toBeNull();
+
       scope.model.advanceTopics();
-      jasmine.Clock.tick(1000);
-      expect(scope.currentTopic.duration).toEqual(1);
-      expect(scope.pastTopics[0].duration).toMatch(/0+:0+:02/);
+      expect(scope.currentTopic.startTime).not.toBeNull();
+      expect(scope.currentTopic.duration).toBeNull();
+
+      expect(scope.pastTopics[0].startTime).toBeNull();
+      expect(scope.pastTopics[0].duration).toMatch(/0+:0+:0+/);
     });
   });
 
@@ -265,7 +257,7 @@ describe('HangDownListController', function(){
 
       // Make sure that the required elements have be defined.
       var newState = gapi.hangout.data.getState();
-      expect(newState.conversationDuration).toBeDefined();
+      expect(newState.conversationStart).toBeDefined();
       expect(newState.currentTopic).toBeDefined();
       expect(newState.pastTopics).toBeDefined();
       expect(newState.futureTopics).toBeDefined();
@@ -273,10 +265,11 @@ describe('HangDownListController', function(){
 
     it('should initialize with the shared state if one already exists', function(){
       // Create a sample state.
+      var startTime = new Date().getTime();
       var newTopic = scope.model.createTopic('New Topic', 'Test User');
-      newTopic.duration = 13;
+      newTopic.startTime = startTime;
       gapi.hangout.data.currentState = {
-        conversationDuration: JSON.stringify(13),
+        conversationStart: JSON.stringify(startTime),
         currentTopic: JSON.stringify(newTopic)
       };
 
@@ -284,9 +277,9 @@ describe('HangDownListController', function(){
       ctrl = new HangDownListCntr(scope);
 
       // Validate the state.
-      expect(scope.conversationDuration).toEqual(13);
+      expect(scope.conversationStart).toEqual(startTime);
       expect(scope.currentTopic.contents).toEqual('New Topic');
-      expect(scope.currentTopic.duration).toEqual(13);
+      expect(scope.currentTopic.startTime).toEqual(startTime);
     });
 
     it('should not apply gapi updates if self-originated', function(){
@@ -322,8 +315,10 @@ describe('HangDownListController', function(){
   describe('randomly', function(){
     it('should be able to format durations in a conversation-readable way', function(){
       expect(scope.formatDuration).toBeDefined();
-      var duration = 1*60*60 + 13*60 + 30;
-      var formattedDuration = scope.formatDuration(duration);
+
+      var fromTime = new Date().getTime();
+      var toTime = fromTime + (1*60*60 + 13*60 + 30)*1000;
+      var formattedDuration = scope.formatDuration(fromTime, toTime);
       expect(formattedDuration).toMatch(/[0-9]*1:13:3[0-9]/);
     });
   });
