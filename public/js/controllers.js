@@ -194,6 +194,8 @@ function HangDownListCntr($scope) {
   };
 
   var processStateUpdate = function(stateChangedEvent){
+    console.log(stateChangedEvent);
+
     // If the current shared state update was self-originated, skip.
     if (stateChangedEvent.state.modifier == $scope.currentUser.id) return;
 
@@ -236,6 +238,8 @@ function HangDownListCntr($scope) {
 
     // Install the event handler for a change in model state.
     gapi.hangout.data.onStateChanged.add(processStateUpdate);
+
+    gapi.hangout.data.setValue($scope.currentUser.id + 'timedelta', JSON.stringify(new Date().getTime()));
   });
 }
 
