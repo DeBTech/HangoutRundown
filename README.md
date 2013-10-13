@@ -6,7 +6,6 @@ You know, a rundown. For Hangouts. What part didn't you get?
 
 Things I Learned While Writing This
 ===================================
-
 - AngularJS
 - Google Hangouts API
 - Jasmine
@@ -15,6 +14,8 @@ Things I Learned While Writing This
 
 TODO
 ====
+- Add a survey link to the app to get feedback on how the app should work.
+
 - Change colors for each name.
 - Delete button should move to left and be an small minus or x.
 

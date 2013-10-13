@@ -120,7 +120,7 @@ describe('HangDownListController', function(){
       expect(newTopic.id).toBeDefined();
       expect(newTopic.creator).toEqual('Temp U');
       expect(newTopic.contents).toEqual('New Topic');
-      expect(newTopic.duration).toEqual(0);
+      expect(newTopic.duration).toBeNull();
     });
 
     it('should create topics with unique ids', function(){
@@ -191,11 +191,17 @@ describe('HangDownListController', function(){
   });
 
   //===========================================================================
-  // CONVERSATION
+  // TIMERS
   //===========================================================================
-  describe('conversation counters', function(){
+  describe('timers', function(){
     beforeEach(function(){
       jasmine.Clock.useMock();
+    });
+
+    it('should not start the conversation until a topic is created', function(){
+      expect(scope.conversationDuration).toBeNull();
+      jasmine.Clock.tick(2000);
+      expect(scope.conversationDuration).toBeNull();
     });
 
     it('should start the conversation when the first topic is created', function(){
@@ -238,7 +244,7 @@ describe('HangDownListController', function(){
       scope.model.advanceTopics();
       jasmine.Clock.tick(1000);
       expect(scope.currentTopic.duration).toEqual(1);
-      expect(scope.pastTopics[0].duration).toEqual(2);
+      expect(scope.pastTopics[0].duration).toMatch(/0+:0+:02/);
     });
   });
 
