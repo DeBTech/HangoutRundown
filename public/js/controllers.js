@@ -132,7 +132,7 @@ function HangDownListCntr($scope) {
   $scope.topicSortConfig = {
     stop: function(e, ui){
       // Push state.
-      _pushSharedState();
+      $scope.gapi.pushSharedState();
     }
   };
 
@@ -144,11 +144,15 @@ function HangDownListCntr($scope) {
       return function(){
         if (!_gapiLive) return;
         innerFunction.apply(this, arguments);
-        _pushSharedState();
+        myGapi.pushSharedState();
       };
     };
 
-    var initGapiModel = function(){
+    /**
+    InitGapiModel()
+    Submits a blank state to GAPI that has placeholders for all required variables.
+    */
+    var _initGapiModel = function(){
       // Create expected values in the shared model.
       gapi.hangout.data.submitDelta({
         conversationDuration: JSON.stringify(null),
@@ -158,7 +162,11 @@ function HangDownListCntr($scope) {
       });
     };
 
-    var _pushSharedState = function(stateDelta){
+    /**
+    PushSharedState()
+    Pushes all of the current state to the server.
+    */
+    myGapi.pushSharedState = function(stateDelta){
       // If there was no state provided, just push the whole system.
       if (!stateDelta) {
         stateDelta = {
@@ -179,9 +187,7 @@ function HangDownListCntr($scope) {
       gapi.hangout.data.submitDelta( stateDelta );
     };
 
-    var processStateUpdate = function(stateChangedEvent){
-      console.log(stateChangedEvent);
-
+    var _processStateUpdate = function(stateChangedEvent){
       // If the current shared state update was self-originated, skip.
       if (stateChangedEvent.state.modifier == $scope.currentUser.id) return;
 
@@ -205,33 +211,46 @@ function HangDownListCntr($scope) {
       $scope.$apply();  // Have to do this to force the view to update.
     };
 
+    var _serverTimeDelta = 0;
+    myGapi.getServerTime = function(){
+      var currentTime = new Date().getTime();
+      return currentTime + _serverTimeDelta;
+    };
+
     // Add a callback to initialize gAPI elements.
     gapi.hangout.onApiReady.add(function(eventObj){
       var initialState = gapi.hangout.data.getState();
       $scope.currentUser = gapi.hangout.getLocalParticipant();
 
       // If the state has not been initialized, do that now.
-      if (initialState.currentTopic == undefined) initGapiModel();
+      if (initialState.currentTopic == undefined) _initGapiModel();
       // Otherwise, update internal state with shared state.
       else applySharedState(initialState);
 
+      // Prepare to determine the time difference on the server.
+      var timeKey = $scope.currentUser.id + '_timedelta';
+
       // Function to complete the remainder of initialization.
-      var _completeInitialization = function(){
+      var _completeInitialization = function(stateChangedEvent){
         // First, remove this callback from the notification list for gapi.
         gapi.hangout.data.onStateChanged.remove(_completeInitialization);
+
+        console.log(stateChangedEvent);
 
         // TODO: Figure out delta from server time.
         // TODO: Store all timestamps in server time.
         // TODO: Format all time durations in server time.
 
         // Install the event handler for a change in model state.
-        gapi.hangout.data.onStateChanged.add(processStateUpdate);
+        gapi.hangout.data.onStateChanged.add(_processStateUpdate);
 
         // Finally, set up internal model to work with gapi.
         _gapiLive = true;
       };
 
-      gapi.hangout.data.setValue($scope.currentUser.id + '_timedelta', JSON.stringify(new Date().getTime()));
+      // Determine the server time delta and finish initialization.
+      gapi.hangout.data.onStateChanged.add(_completeInitialization);
+      gapi.hangout.data.setValue(timeKey, JSON.stringify(new Date().getTime()));
     });
 
     // Make sure to return the closure.
