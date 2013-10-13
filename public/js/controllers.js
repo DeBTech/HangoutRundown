@@ -59,9 +59,6 @@ function HangDownListCntr($scope) {
         };
       }
 
-      // Next, determine whether an update type was specified.
-
-
       // Next, set the current updater.
       stateDelta.modifier = $scope.currentUser.id;
 
@@ -202,14 +199,14 @@ function HangDownListCntr($scope) {
 
       // TODO: Decide whether you should be able to delete the current topic.
 
-      // TODO: If deleting the last topic, stop the conversation timer.
-
       // Check to see if the current topic should be deleted.
       if ($scope.currentTopic != null && $scope.currentTopic.id == topicId)
         // If it should, either replace it with the first future topic, or null.
-        $scope.currentTopic = ($scope.futureTopics.length) ? 
-          $scope.currentTopic = $scope.futureTopics.shift() :
-          null;
+        if ($scope.futureTopics.length) {
+          $scope.currentTopic = $scope.futureTopics.shift();
+          $scope.currentTopic.startTime = $scope.gapi.getServerTime();
+        }
+        else $scope.currentTopic = null;
     };
 
     // AdvanceTopics()

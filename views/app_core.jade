@@ -1,14 +1,11 @@
 script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
 script(src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js")
 script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.5/angular.min.js")
-// script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js")
 script(src=appUrl+"/js/angular.ui.sortable.js")
-//script(src=appUrl+"/js/angular.min.js")
 script(src=appUrl+"/js/app.js")
 script(src=appUrl+"/js/controllers.js")
 link(href=appUrl+"/stylesheets/style.css", rel="stylesheet", type="text/css")
 link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel="stylesheet", type="text/css")
-//link(href=appUrl+"/stylesheets/bootstrap.min.css", rel="stylesheet", type="text/css")
 #HangDownContent(ng-app='HangDown', ng-controller="HangDownListCntr")
   header#HangDownHeader
     h1 HangDown
@@ -28,7 +25,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
       .main
         p.title {{currentTopic.contents}}
         p.creator {{currentTopic.creator}}
-        button(ng-click="deleteTopic('{{currentTopic.id}}')").delete-topic Delete
+        button(ng-click="deleteTopic(currentTopic.id)").delete-topic Delete
       .time
         span {{formatDuration(currentTopic.startTime)}}
 
