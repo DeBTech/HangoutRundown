@@ -75,6 +75,8 @@ function HangDownListCntr($scope) {
     };
 
     var applySharedState = function(newState){
+      console.log(newState);
+
       // Copy available elements of the state.
       if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
       if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
