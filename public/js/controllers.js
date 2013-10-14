@@ -75,8 +75,6 @@ function HangDownListCntr($scope) {
     };
 
     var applySharedState = function(newState){
-      console.log(newState);
-
       // Copy available elements of the state.
       if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
       if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
@@ -183,6 +181,11 @@ function HangDownListCntr($scope) {
         if ($scope.currentTopic == null) {
           $scope.currentTopic = model.createTopic(newTopic, creator);
           $scope.currentTopic.startTime = $scope.gapi.getServerTime();
+
+          // If the conversation duration hasn't been set, set it now.
+          if ($scope.conversationStart == null)
+            $scope.conversationStart = $scope.currentTopic.startTime;
+
           model.startConversation();
         }
         // Otherwise, add it to the future topics.
@@ -233,10 +236,6 @@ function HangDownListCntr($scope) {
 
     var _timerEvent = null;
     model.startConversation = function(){
-      // If the conversation duration hasn't been set, set it now.
-      if ($scope.conversationStart == null)
-        $scope.conversationStart = $scope.gapi.getServerTime();
-
       // If there's no timer event running, create one.
       if (_timerEvent == null) {
         _timerEvent = setInterval(function(){
