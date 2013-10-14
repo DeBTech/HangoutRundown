@@ -14,7 +14,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
   
   #HangDownTopics
     ul#PastTopics
-      li.topic(ng-repeat="topic in pastTopics")
+      li.topic(ng-repeat="topic in pastTopics track by topic.id")
         .main
           p.title {{topic.contents}}
           p.creator {{topic.creator}}
@@ -30,7 +30,7 @@ link(href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", rel
         span {{formatDuration(currentTopic.startTime)}}
 
     ul#FutureTopics(ui-sortable='topicSortConfig', ng-model='futureTopics')
-      li.topic(ng-repeat="topic in futureTopics")
+      li.topic(ng-repeat="topic in futureTopics track by topic.id")
         .main
           p.title {{topic.contents}}
           p.creator {{topic.creator}}

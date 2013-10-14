@@ -75,20 +75,9 @@ function HangDownListCntr($scope) {
     };
 
     var applySharedState = function(newState){
-      // TODO: Might have to filter $$hashKey properties out of these arrays.
-      //       It was causing problems in the last implementation.
-
       // Copy available elements of the state.
       if (newState.currentTopic) $scope.currentTopic = JSON.parse(newState.currentTopic);
-
-      if (newState.futureTopics) {
-        var futureTopics = JSON.parse(newState.futureTopics);
-        for (var i = futureTopics.length - 1; i >= 0; i--) {
-          delete futureTopics[i]['$$hashKey'];
-        };
-        $scope.futureTopics = futureTopics;
-      }
-
+      if (newState.futureTopics) $scope.futureTopics = JSON.parse(newState.futureTopics);
       if (newState.pastTopics) $scope.pastTopics = JSON.parse(newState.pastTopics);
       if (newState.conversationStart) $scope.conversationStart = JSON.parse(newState.conversationStart);
 
